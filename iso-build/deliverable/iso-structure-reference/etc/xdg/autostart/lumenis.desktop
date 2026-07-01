@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Lumenis v7.0 Desktop
+Comment=One2lvOS Web Desktop Environment
+Exec=/opt/lumenis/launch-lumenis.sh --kiosk
+Icon=computer
+Terminal=false

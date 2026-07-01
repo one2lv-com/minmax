@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=One2lvOS Phase 9 - Delta Engine
+GenericName=Multi-Agent Delta System
+Comment=Full Autonomous Delta Engine with 3D Vector Engine
+Exec=/opt/one2lv/launch.sh
+Icon=computer
+Terminal=true
+Categories=System;Network;Science;
+Keywords=AI;Delta;Agent;Vector;DeltaEngine;

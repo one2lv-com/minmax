@@ -1,0 +1,55 @@
+{
+  "name": "one2lvos-phase9",
+  "version": "9.0.0",
+  "description": "One2lvOS Phase 9 - Full Autonomous Delta Engine with Interplanetary Disk",
+  "main": "opt/one2lv/ui/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "bash opt/one2lv/launch.sh",
+    "start-phase9": "cd opt/one2lv && bash launch.sh",
+    "start-disk": "cd interplanetary-disk && docker-compose up --build -d",
+    "install": "./builder/quick-run.sh install",
+    "install-deps": "sudo ./builder/quick-run.sh install-deps",
+    "dev": "node opt/one2lv/ui/server.js",
+    "council": "node opt/one2lv/ai/council/council.js",
+    "ui": "node opt/one2lv/ui/server.js",
+    "discovery": "node opt/one2lv/mesh/discovery.js",
+    "build-iso": "cd iso-build && sudo ./build-iso.sh"
+  },
+  "keywords": [
+    "autonomous",
+    "multi-agent",
+    "delta-engine",
+    "3d-vector",
+    "council",
+    "rpc",
+    "vector-db",
+    "sandbox",
+    "phase9",
+    "interplanetary",
+    "one2lvos",
+    "docker"
+  ],
+  "author": "One2lvOS",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.17.0",
+    "cors": "^2.8.5",
+    "node-fetch": "^3.3.2",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "bcrypt": "^5.1.0",
+    "express-rate-limit": "^6.7.0",
+    "jsonwebtoken": "^9.0.0",
+    "winston": "^3.10.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/one2lv-com/minmax"
+  }
+}

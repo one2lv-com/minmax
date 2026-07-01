@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Infinity Glass • Universe</title>
+
+<style>
+body {
+  margin:0;
+  background:#000;
+  overflow:hidden;
+  font-family:monospace;
+}
+
+#hud {
+  position:absolute;
+  top:10px;
+  left:10px;
+  color:#00ffcc;
+  font-size:12px;
+  z-index:10;
+}
+
+#terminal {
+  position:absolute;
+  bottom:10px;
+  left:10px;
+  width:320px;
+  background:rgba(0,0,0,0.6);
+  border:1px solid #00ffcc;
+  padding:10px;
+  z-index:10;
+}
+
+#terminal input {
+  width:100%;
+  background:black;
+  border:none;
+  color:#00ffcc;
+  outline:none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="hud">
+  <div>🌌 Infinity Glass</div>
+  <div id="status">Connecting...</div>
+</div>
+
+<div id="terminal">
+  <div>> Terminal</div>
+  <input id="cmd" placeholder="type command..." />
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="universe.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. 9.1.0)'
+        required: true
+        default: '9.1.0'
+
+jobs:
+  release:
+    name: Build & Publish Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: opt/one2lv
+        run: npm install --no-audit --no-fund
+
+      - name: Build cross-platform archive
+        shell: bash
+        run: |
+          mkdir -p dist
+          tar --exclude='node_modules' \
+              --exclude='*.key' \
+              --exclude='memory/*.json' \
+              --exclude='vector/*.json' \
+              --exclude='logs/*.log' \
+              -czf dist/one2lvos-phase9-${{ github.ref_name }}.tar.gz \
+              opt windows README.md package.json .gitignore
+
+      - name: Upload source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: one2lvos-phase9-${{ matrix.os }}-source
+          path: dist/*.tar.gz
+
+  publish:
+    name: Publish GitHub Release
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: One2lvOS Phase 9 ${{ github.ref_name }}
+          body: |
+            One2lvOS Phase 9 - Full Autonomous Delta Engine
+
+            ## Cross-Platform
+            - Linux / macOS / Windows 11
+            - ∆⁹ 9-Layer Delta Engine
+            - ³ 3D Vector Engine
+
+            ## Install
+            - **Windows**: Run `windows/dist/one2lvos-phase9-setup.exe`
+            - **Linux/macOS**: `cd opt/one2lv && npm install && node launch.js`
+          files: artifacts/**/*
+          draft: false
+          prerelease: false

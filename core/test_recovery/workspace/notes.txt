@@ -1,0 +1,3 @@
+one2lvos_v4 initialized.
+Recovery is first-class.
+The system should be understandable from boot.

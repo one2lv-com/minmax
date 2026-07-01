@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=One2lvOS Phase 9 - Dashboard
+GenericName=Web Dashboard
+Comment=Phase 9 Monitoring Dashboard
+Exec=xdg-open http://localhost:8080
+Icon=utilities-system-monitor
+Terminal=false
+Categories=System;Monitor;
+Keywords=Dashboard;Monitor;Status;DeltaEngine;

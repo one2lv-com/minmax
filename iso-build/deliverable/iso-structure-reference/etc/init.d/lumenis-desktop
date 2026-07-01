@@ -1,0 +1,27 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          lumenis-desktop
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs
+# Default-Start:     5
+# Default-Stop:      0 1 2 3 4 6
+# Short-Description: Lumenis v7.0 Web Desktop
+# Description:       One2lvOS Web Desktop Environment
+### END INIT INFO
+
+LUMENIS_LAUNCHER="/opt/lumenis/launch-lumenis.sh"
+
+case "$1" in
+    start)
+        echo "Starting Lumenis v7.0 Web Desktop..."
+        if [ -x "$LUMENIS_LAUNCHER" ]; then
+            "$LUMENIS_LAUNCHER" --kiosk &
+        fi
+        ;;
+    stop)
+        pkill -f "chromium" 2>/dev/null
+        pkill -f "firefox" 2>/dev/null
+        ;;
+esac
+
+exit 0

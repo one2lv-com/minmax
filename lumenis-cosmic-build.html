@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUMENIS Cosmic Build v7.0 - One2lvOS</title>
+    <style>
+        :root {
+            --bg-deep: #030014;
+            --bg-panel: rgba(10, 5, 30, 0.85);
+            --cyan: #00f5ff;
+            --cyan-glow: rgba(0, 245, 255, 0.3);
+            --purple: #a855f7;
+            --purple-glow: rgba(168, 85, 247, 0.3);
+            --pink: #ec4899;
+            --amber: #f59e0b;
+            --green: #22c55e;
+            --red: #ef4444;
+            --text: #e2e8f0;
+            --text-dim: rgba(226, 232, 240, 0.6);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-deep);
+            color: var(--text);
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Cosmic Background - James Webb Style */
+        #cosmic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(65, 0, 128, 0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 100, 150, 0.3) 0%, transparent 40%),
+                radial-gradient(ellipse at 60% 80%, rgba(100, 0, 100, 0.3) 0%, transparent 45%),
+                radial-gradient(ellipse at 90% 90%, rgba(0, 50, 100, 0.4) 0%, transparent 35%),
+                radial-gradient(circle at 50% 50%, rgba(20, 0, 40, 1) 0%, var(--bg-deep) 100%);
+        }
+
+        #cosmic-bg::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(2px 2px at 20px 30px, white, transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(2px 2px at 50px 160px, rgba(255,255,255,0.6), transparent),
+                radial-gradient(2px 2px at 90px 40px, white, transparent),
+                radial-gradient(2px 2px at 130px 80px, rgba(255,255,255,0.7), transparent),
+                radial-gradient(3px 3px at 160px 120px, white, transparent),
+                radial-gradient(2px 2px at 200px 50px, rgba(255,255,255,0.5), transparent),
+                radial-gradient(2px 2px at 250px 180px, white, transparent),
+                radial-gradient(3px 3px at 300px 90px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(2px 2px at 350px 140px, white, transparent),
+                radial-gradient(2px 2px at 400px 60px, rgba(255,255,255,0.6), transparent),
+                radial-gradient(3px 3px at 450px 200px, white, transparent),
+                radial-gradient(2px 2px at 500px 100px, rgba(255,255,255,0.7), transparent),
+                radial-gradient(2px 2px at 550px 170px, white, transparent),
+                radial-gradient(2px 2px at 600px 30px, rgba(255,255,255,0.5), transparent);
+            background-repeat: repeat;
+            background-size: 600px 220px;
+            animation: stars-drift 120s linear infinite;
+            opacity: 0.8;
+        }
+
+        @keyframes stars-drift {
+            from { transform: translateY(0) translateX(0); }
+            to { transform: translateY(-220px) translateX(-200px); }
+        }
+
+        /* Main Container */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .version-badge {
+            padding: 0.25rem 0.75rem;
+            background: var(--purple-glow);
+            border: 1px solid var(--purple);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--purple);
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-dot.online { background: var(--green); }
+        .status-dot.warning { background: var(--amber); }
+        .status-dot.offline { background: var(--red); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .raccoon {
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .raccoon:hover {
+            transform: scale(1.2);
+        }
+
+        /* Panels Grid */
+        .panels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1rem;
+            flex: 1;
+        }
+
+        /* Panel Base Styles */
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: box-shadow 0.3s, border-color 0.3s;
+            position: relative;
+        }
+
+        .panel:focus-within {
+            border-color: var(--cyan);
+            box-shadow: 0 0 20px var(--cyan-glow);
+        }
+
+        .panel.keyboard-focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 25px var(--cyan-glow);
+        }
+
+        /* Panel Resize Handle */
+        .panel-resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 20px;
+            height: 100%;
+            cursor: ew-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            font-size: 1rem;
+            opacity: 0.3;
+            transition: opacity 0.3s, color 0.3s;
+            z-index: 10;
+        }
+
+        .panel-resize-handle:hover {
+            opacity: 1;
+            color: var(--cyan);
+        }
+
+        .panel-resize-handle:active {
+            opacity: 1;
+            color: var(--purple);
+        }
+
+        /* Panel Header */
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .panel-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .panel-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .panel-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 0.25rem;
+            font-size: 0.875rem;
+            transition: color 0.3s;
+        }
+
+        .panel-btn:hover {
+            color: var(--cyan);
+        }
+
+        /* Panel Content */
+        .panel-content {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            min-height: 150px;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--cyan);
+            border-color: var(--cyan);
+            background: var(--cyan-glow);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+
+        .stat-value.purple { color: var(--purple); }
+        .stat-value.green { color: var(--green); }
+        .stat-value.amber { color: var(--amber); }
+        .stat-value.pink { color: var(--pink); }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--cyan);
+            background: transparent;
+            color: var(--cyan);
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: var(--cyan);
+            color: var(--bg-deep);
+        }
+
+        .btn.primary {
+            background: var(--cyan);
+            color: var(--bg-deep);
+        }
+
+        .btn.primary:hover {
+            background: var(--purple);
+            border-color: var(--purple);
+        }
+
+        .btn.danger {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .btn.danger:hover {
+            background: var(--red);
+            color: white;
+        }
+
+        /* Council Chat */
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .chat-message {
+            padding: 0.75rem;
+            border-radius: 8px;
+            border-left: 3px solid;
+        }
+
+        .chat-message.minimaxtaskbot2026 {
+            background: rgba(0, 245, 255, 0.1);
+            border-color: var(--cyan);
+        }
+
+        .chat-message.lumenis_echo {
+            background: rgba(168, 85, 247, 0.1);
+            border-color: var(--purple);
+        }
+
+        .chat-message.one2lv {
+            background: rgba(236, 72, 153, 0.1);
+            border-color: var(--pink);
+        }
+
+        .chat-sender {
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            opacity: 0.8;
+        }
+
+        .chat-text {
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        /* Event Log */
+        .event-log {
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .log-time {
+            color: var(--text-dim);
+            flex-shrink: 0;
+        }
+
+        .log-type {
+            color: var(--purple);
+            flex-shrink: 0;
+        }
+
+        .log-data {
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Combo Display */
+        .combo-display {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .combo-count {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--cyan), var(--purple), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .combo-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .combo-type {
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: var(--purple-glow);
+            border: 1px solid var(--purple);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--purple);
+            display: inline-block;
+        }
+
+        /* Brawl Analysis */
+        .brawl-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .brawl-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brawl-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .brawl-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            margin: 0 0.75rem;
+            overflow: hidden;
+        }
+
+        .brawl-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .brawl-fill.accuracy { background: var(--cyan); }
+        .brawl-fill.reaction { background: var(--purple); }
+        .brawl-fill.combo-rate { background: var(--pink); }
+
+        .brawl-value {
+            font-size: 0.8rem;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* Terminal */
+        .terminal-output {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .terminal-line {
+            margin-bottom: 0.25rem;
+        }
+
+        .terminal-prompt {
+            color: var(--cyan);
+        }
+
+        .terminal-cmd {
+            color: var(--text);
+        }
+
+        .terminal-out {
+            color: var(--green);
+        }
+
+        .terminal-err {
+            color: var(--red);
+        }
+
+        /* Command Input */
+        .command-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .command-input input {
+            flex: 1;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+
+        .command-input input:focus {
+            outline: none;
+            border-color: var(--cyan);
+        }
+
+        /* Canvas Arena */
+        .arena-canvas {
+            width: 100%;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        /* Footer */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .keyboard-hint {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .key {
+            padding: 0.2rem 0.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--cyan);
+            border-radius: 8px;
+            color: var(--cyan);
+            font-size: 0.85rem;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 1.7s forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .panels-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="cosmic-bg"></div>
+
+    <div class="main-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-title">
+                <h1>LUMENIS</h1>
+                <span class="version-badge">v7.0 Cosmic</span>
+            </div>
+            <div class="status-indicators">
+                <div class="status-dot online" title="Online"></div>
+                <span style="font-size: 0.8rem;">BackBox Gaming OS</span>
+                <span id="raccoon" class="raccoon" title="Raccoon Agent">🦝</span>
+            </div>
+        </header>
+
+        <!-- Main Panels Grid -->
+        <div class="panels-grid">
+            <!-- System Status Panel -->
+            <div class="panel" id="panel-status" tabindex="0">
+                <div class="panel-resize-handle" title="Drag to resize">⫱</div>
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12,6 12,12 16,14"/>
+                        </svg>
+                        System Status
+                    </div>
+                    <div class="panel-controls">
+                        <button class="panel-btn" onclick="refreshStatus()" title="Refresh">↻</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Response</span>
+                            <span class="stat-value" id="stat-response">--ms</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Combos</span>
+                            <span class="stat-value purple" id="stat-combos">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Council Votes</span>
+                            <span class="stat-value green" id="stat-votes">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Events</span>
+                            <span class="stat-value amber" id="stat-events">0</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                        <button class="btn" onclick="testSystem()">Test System</button>
+                        <button class="btn" onclick="clearStats()">Clear</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Council Chat Panel -->
+            <div class="panel" id="panel-council" tabindex="0">
+                <div class="panel-resize-handle" title="Drag to resize">⫱</div>
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                        </svg>
+                        AI Council
+                    </div>
+                    <div class="panel-controls">
+                        <button class="panel-btn" onclick="clearCouncil()" title="Clear">✕</button>
+                    </div>
+                </div>
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-tab="chat">Chat</button>
+                    <button class="tab-btn" data-tab="vote">Vote</button>
+                </div>
+                <div class="panel-content">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-message minimaxtaskbot2026">
+                            <div class="chat-sender">minimaxtaskbot2026 (Architect)</div>
+                            <div class="chat-text">LUMENIS initialized. All systems operational. Standing by for commands.</div>
+                        </div>
+                    </div>
+                    <div class="command-input" style="margin-top: 0.75rem;">
+                        <input type="text" id="council-input" placeholder="Enter proposal for council..." onkeypress="handleCouncilInput(event)">
+                        <button class="btn primary" onclick="submitToCouncil()">Submit</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Combo Tracker Panel -->
+            <div class="panel" id="panel-combo" tabindex="0">
+                <div class="panel-resize-handle" title="Drag to resize">⫱</div>
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                        Combo Tracker
+                    </div>
+                    <div class="panel-controls">
+                        <button class="panel-btn" onclick="resetCombos()" title="Reset">↺</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="combo-display">
+                        <div class="combo-count" id="combo-count">0</div>
+                        <div class="combo-label">Combo Hits</div>
+                        <div class="combo-type" id="combo-type">--</div>
+                    </div>
+                    <div class="command-input" style="margin-top: 1rem;">
+                        <input type="number" id="combo-input" placeholder="Simulate hits..." min="1" max="20">
+                        <button class="btn primary" onclick="simulateCombo()">Hit!</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brawl Analysis Panel -->
+            <div class="panel" id="panel-brawl" tabindex="0">
+                <div class="panel-resize-handle" title="Drag to resize">⫱</div>
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                        Brawl Analysis
+                    </div>
+                    <div class="panel-controls">
+                        <button class="panel-btn" onclick="refreshBrawl()" title="Refresh">↻</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="brawl-stats">
+                        <div class="brawl-row">
+                            <span class="brawl-label">Accuracy</span>
+                            <div class="brawl-bar">
+                                <div class="brawl-fill accuracy" id="accuracy-fill" style="width: 0%"></div>
+                            </div>
+                            <span class="brawl-value" id="accuracy-value">0%</span>
+                        </div>
+                        <div class="brawl-row">
+                            <span class="brawl-label">Reaction</span>
+                            <div class="brawl-bar">
+                                <div class="brawl-fill reaction" id="reaction-fill" style="width: 0%"></div>
+                            </div>
+                            <span class="brawl-value" id="reaction-value">0ms</span>
+                        </div>
+                        <div class="brawl-row">
+                            <span class="brawl-label">Combo Rate</span>
+                            <div class="brawl-bar">
+                                <div class="brawl-fill combo-rate" id="combo-rate-fill" style="width: 0%"></div>
+                            </div>
+                            <span class="brawl-value" id="combo-rate-value">0%</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn" onclick="analyzeBrawl()">Analyze Match</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Log Panel -->
+            <div class="panel" id="panel-log" tabindex="0">
+                <div class="panel-resize-handle" title="Drag to resize">⫱</div>
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                        Event Log
+                    </div>
+                    <div class="panel-controls">
+                        <button class="panel-btn" onclick="clearLog()" title="Clear">✕</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="event-log" id="event-log">
+                        <div class="log-entry">
+                            <span class="log-time">--:--:--</span>
+                            <span class="log-type">[SYS]</span>
+                            <span class="log-data">LUMENIS Cosmic Build initialized</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal Panel -->
+            <div class="panel" id="panel-terminal" tabindex="0">
+                <div class="panel-resize-handle" title="Drag to resize">⫱</div>
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="4 17 10 11 4 5"/>
+                            <line x1="12" y1="19" x2="20" y2="19"/>
+                        </svg>
+                        Terminal
+                    </div>
+                    <div class="panel-controls">
+                        <button class="panel-btn" onclick="clearTerminal()" title="Clear">✕</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="terminal-output" id="terminal-output">
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">$</span>
+                            <span class="terminal-cmd"> LUMENIS v7.0 Cosmic Build</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-out">BackBox Gaming OS initialized</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-out">Infinity Glass spatial layer ready</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">$</span>
+                            <span class="terminal-cmd"> Awaiting commands...</span>
+                        </div>
+                    </div>
+                    <div class="command-input">
+                        <input type="text" id="terminal-input" placeholder="Type command..." onkeypress="handleTerminalInput(event)">
+                        <button class="btn" onclick="executeCommand()">Run</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="keyboard-hint">
+                <span class="key">Tab</span> Navigate
+                <span class="key">1-5</span> Jump to panel
+                <span class="key">?</span> Help
+            </div>
+            <div>
+                <span>One2lvOS • Infinity Glass • LUMENIS v7.0</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ==================== STATE ====================
+        const state = {
+            comboCount: 0,
+            councilVotes: 0,
+            eventCount: 0,
+            responseTime: 0,
+            raccoonStress: 0,
+            panels: {},
+            keyboardFocus: 0,
+            focusableElements: []
+        };
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            initResizablePanels();
+            loadPanelState();
+            initKeyboardNavigation();
+            initTabNav();
+            updateTimestamp();
+            setInterval(updateTimestamp, 1000);
+
+            // Load saved state
+            loadState();
+            updateStats();
+
+            console.log('[LUMENIS] Cosmic Build v7.0 initialized');
+            terminalLog('LUMENIS Cosmic Build v7.0 ready');
+            terminalLog('Press ? for keyboard shortcuts');
+        });
+
+        // ==================== PANEL RESIZE SYSTEM ====================
+        function initResizablePanels() {
+            document.querySelectorAll('.panel').forEach(panel => {
+                const handle = panel.querySelector('.panel-resize-handle');
+                if (!handle) return;
+
+                let isResizing = false;
+                let startX, startWidth;
+
+                handle.addEventListener('mousedown', (e) => {
+                    isResizing = true;
+                    startX = e.clientX;
+                    startWidth = panel.offsetWidth;
+                    panel.style.transition = 'none';
+                    handle.style.opacity = '1';
+                    e.preventDefault();
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isResizing) return;
+
+                    const dx = e.clientX - startX;
+                    const newWidth = Math.max(280, Math.min(700, startWidth + dx));
+                    panel.style.width = newWidth + 'px';
+                    state.panels[panel.id] = { width: newWidth };
+                });
+
+                document.addEventListener('mouseup', () => {
+                    if (isResizing) {
+                        isResizing = false;
+                        handle.style.opacity = '0.3';
+                        panel.style.transition = '';
+                        savePanelState();
+                    }
+                });
+            });
+        }
+
+        function savePanelState() {
+            localStorage.setItem('lumenis_panels', JSON.stringify(state.panels));
+        }
+
+        function loadPanelState() {
+            const saved = localStorage.getItem('lumenis_panels');
+            if (saved) {
+                state.panels = JSON.parse(saved);
+                Object.entries(state.panels).forEach(([id, dims]) => {
+                    const panel = document.getElementById(id);
+                    if (panel && dims.width) {
+                        panel.style.width = dims.width + 'px';
+                    }
+                });
+            }
+        }
+
+        // ==================== KEYBOARD NAVIGATION ====================
+        function initKeyboardNavigation() {
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case '1': case '2': case '3': case '4': case '5':
+                        if (!e.ctrlKey && !e.metaKey) {
+                            const panels = document.querySelectorAll('.panel');
+                            const index = parseInt(e.key) - 1;
+                            if (panels[index]) {
+                                panels[index].scrollIntoView({ behavior: 'smooth' });
+                                flashPanel(panels[index]);
+                            }
+                        }
+                        break;
+                    case '?':
+                        showKeyboardHelp();
+                        break;
+                    case 'c':
+                        if (e.ctrlKey || e.metaKey) {
+                            e.preventDefault();
+                            document.getElementById('terminal-input')?.focus();
+                        }
+                        break;
+                }
+            });
+        }
+
+        function flashPanel(panel) {
+            panel.style.boxShadow = '0 0 30px rgba(0, 245, 255, 0.5)';
+            setTimeout(() => panel.style.boxShadow = '', 500);
+        }
+
+        function showKeyboardHelp() {
+            alert(`LUMENIS Keyboard Shortcuts:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1-5    Jump to panel
+Tab    Navigate elements
+Ctrl+C Focus terminal
+?      Show this help
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`);
+        }
+
+        // ==================== TAB NAVIGATION ====================
+        function initTabNav() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabGroup = btn.closest('.tab-nav');
+                    tabGroup.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    // Show relevant content
+                    const panel = btn.closest('.panel');
+                    const tab = btn.dataset.tab;
+
+                    // Handle tab-specific content visibility
+                    console.log(`Tab switched to: ${tab}`);
+                });
+            });
+        }
+
+        // ==================== SYSTEM FUNCTIONS ====================
+        function refreshStatus() {
+            state.responseTime = Math.floor(Math.random() * 30) + 15;
+            document.getElementById('stat-response').textContent = state.responseTime + 'ms';
+            terminalLog(`System check complete: ${state.responseTime}ms response time`);
+        }
+
+        function testSystem() {
+            terminalLog('Running system diagnostics...');
+            setTimeout(() => {
+                terminalLog('All modules operational');
+                showNotification('System test passed');
+            }, 500);
+        }
+
+        function clearStats() {
+            state.comboCount = 0;
+            state.councilVotes = 0;
+            state.eventCount = 0;
+            updateStats();
+            terminalLog('Statistics cleared');
+        }
+
+        function updateStats() {
+            document.getElementById('stat-combos').textContent = state.comboCount;
+            document.getElementById('stat-votes').textContent = state.councilVotes;
+            document.getElementById('stat-events').textContent = state.eventCount;
+            document.getElementById('stat-response').textContent = state.responseTime + 'ms';
+        }
+
+        function updateTimestamp() {
+            // Update any time-based elements
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('lumenis_state');
+            if (saved) {
+                const loaded = JSON.parse(saved);
+                state.comboCount = loaded.comboCount || 0;
+                state.councilVotes = loaded.councilVotes || 0;
+            }
+            state.responseTime = Math.floor(Math.random() * 30) + 15;
+        }
+
+        function saveState() {
+            localStorage.setItem('lumenis_state', JSON.stringify({
+                comboCount: state.comboCount,
+                councilVotes: state.councilVotes
+            }));
+        }
+
+        // ==================== COUNCIL FUNCTIONS ====================
+        function handleCouncilInput(e) {
+            if (e.key === 'Enter') submitToCouncil();
+        }
+
+        function submitToCouncil() {
+            const input = document.getElementById('council-input');
+            const proposal = input.value.trim();
+            if (!proposal) return;
+
+            // Add user message
+            addChatMessage('one2lv', proposal);
+
+            // Simulate council response
+            setTimeout(() => {
+                addChatMessage('minimaxtaskbot2026', `Processing proposal: "${proposal}"`);
+            }, 500);
+
+            setTimeout(() => {
+                addChatMessage('lumenis_echo', 'Analyzing with ³ vector force calculation...');
+            }, 1000);
+
+            setTimeout(() => {
+                const result = simulateVote();
+                addChatMessage('minimaxtaskbot2026', `Council decision: ${result}`);
+                state.councilVotes++;
+                updateStats();
+                logEvent('council', proposal);
+            }, 1500);
+
+            input.value = '';
+        }
+
+        function addChatMessage(sender, text) {
+            const container = document.getElementById('chat-messages');
+            const msg = document.createElement('div');
+            msg.className = `chat-message ${sender}`;
+            msg.innerHTML = `
+                <div class="chat-sender">${sender}</div>
+                <div class="chat-text">${text}</div>
+            `;
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function simulateVote() {
+            const outcomes = ['strong_consensus', 'weak_consensus', 'no_consensus'];
+            return outcomes[Math.floor(Math.random() * outcomes.length)];
+        }
+
+        function clearCouncil() {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = '';
+            addChatMessage('minimaxtaskbot2026', 'Chat cleared. Awaiting new proposals.');
+        }
+
+        // ==================== COMBO FUNCTIONS ====================
+        function simulateCombo() {
+            const hits = parseInt(document.getElementById('combo-input').value) || 5;
+            state.comboCount += hits;
+            updateStats();
+            saveState();
+
+            const comboCount = document.getElementById('combo-count');
+            const comboType = document.getElementById('combo-type');
+
+            // Animate counter
+            let current = 0;
+            const increment = Math.ceil(hits / 10);
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= hits) {
+                    current = hits;
+                    clearInterval(timer);
+                }
+                comboCount.textContent = current;
+            }, 50);
+
+            // Set combo type
+            if (hits >= 10) {
+                comboType.textContent = 'ULTRA COMBO!';
+                comboType.style.background = 'var(--pink)';
+                comboType.style.borderColor = 'var(--pink)';
+            } else if (hits >= 5) {
+                comboType.textContent = 'MEGA COMBO';
+                comboType.style.background = 'var(--purple-glow)';
+            } else {
+                comboType.textContent = 'COMBO';
+                comboType.style.background = 'var(--cyan-glow)';
+            }
+
+            terminalLog(`Combo recorded: ${hits} hits`);
+            logEvent('combo', { hits });
+        }
+
+        function resetCombos() {
+            state.comboCount = 0;
+            document.getElementById('combo-count').textContent = '0';
+            document.getElementById('combo-type').textContent = '--';
+            updateStats();
+            saveState();
+            terminalLog('Combo counter reset');
+        }
+
+        // ==================== BRAWL ANALYSIS ====================
+        function analyzeBrawl() {
+            const accuracy = Math.floor(Math.random() * 30) + 70;
+            const reaction = Math.floor(Math.random() * 100) + 100;
+            const comboRate = Math.floor(Math.random() * 40) + 50;
+
+            document.getElementById('accuracy-fill').style.width = accuracy + '%';
+            document.getElementById('accuracy-value').textContent = accuracy + '%';
+
+            document.getElementById('reaction-fill').style.width = (200 - reaction) + '%';
+            document.getElementById('reaction-value').textContent = reaction + 'ms';
+
+            document.getElementById('combo-rate-fill').style.width = comboRate + '%';
+            document.getElementById('combo-rate-value').textContent = comboRate + '%';
+
+            terminalLog(`Analysis complete: ${accuracy}% accuracy, ${reaction}ms reaction`);
+            logEvent('analysis', { accuracy, reaction, comboRate });
+        }
+
+        function refreshBrawl() {
+            analyzeBrawl();
+        }
+
+        // ==================== EVENT LOG ====================
+        function logEvent(type, data) {
+            state.eventCount++;
+            updateStats();
+
+            const log = document.getElementById('event-log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `
+                <span class="log-time">${time}</span>
+                <span class="log-type">[${type.toUpperCase()}]</span>
+                <span class="log-data">${typeof data === 'object' ? JSON.stringify(data).slice(0, 40) : data}</span>
+            `;
+
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+
+            // Limit entries
+            while (log.children.length > 30) {
+                log.removeChild(log.firstChild);
+            }
+        }
+
+        function clearLog() {
+            const log = document.getElementById('event-log');
+            log.innerHTML = '';
+            state.eventCount = 0;
+            updateStats();
+        }
+
+        // ==================== TERMINAL ====================
+        function terminalLog(message, type = 'out') {
+            const output = document.getElementById('terminal-output');
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = `<span class="terminal-${type}">${message}</span>`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function handleTerminalInput(e) {
+            if (e.key === 'Enter') executeCommand();
+        }
+
+        function executeCommand() {
+            const input = document.getElementById('terminal-input');
+            const cmd = input.value.trim();
+            if (!cmd) return;
+
+            const output = document.getElementById('terminal-output');
+
+            // Echo command
+            const cmdLine = document.createElement('div');
+            cmdLine.className = 'terminal-line';
+            cmdLine.innerHTML = `<span class="terminal-prompt">$</span> <span class="terminal-cmd">${cmd}</span>`;
+            output.appendChild(cmdLine);
+
+            // Process command
+            const result = processCommand(cmd);
+            if (result) {
+                terminalLog(result);
+            }
+
+            input.value = '';
+        }
+
+        function processCommand(cmd) {
+            const commands = {
+                'help': 'Commands: help, status, clear, echo, ping',
+                'status': `LUMENIS v7.0 | Combos: ${state.comboCount} | Events: ${state.eventCount}`,
+                'clear': 'clear',
+                'ping': 'pong',
+                'version': 'LUMENIS Cosmic Build v7.0.0',
+                'info': 'One2lvOS • Infinity Glass Spatial OS • BackBox Gaming'
+            };
+
+            if (commands[cmd]) {
+                if (commands[cmd] === 'clear') {
+                    document.getElementById('terminal-output').innerHTML = '';
+                    return null;
+                }
+                return commands[cmd];
+            }
+
+            return `Unknown command: ${cmd}`;
+        }
+
+        function clearTerminal() {
+            document.getElementById('terminal-output').innerHTML = '';
+            terminalLog('Terminal cleared');
+        }
+
+        // ==================== NOTIFICATIONS ====================
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.textContent = message;
+            document.body.appendChild(notif);
+
+            setTimeout(() => notif.remove(), 2000);
+        }
+    </script>
+</body>
+</html>

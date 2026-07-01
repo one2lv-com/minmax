@@ -1,0 +1,32 @@
+{
+  "executor": {
+    "description": "Executes approved commands",
+    "commands": ["ls", "pwd", "echo", "date", "cat", "head", "tail", "grep", "find", "whoami", "hostname"],
+    "max_per_minute": 60,
+    "requires_approval": false
+  },
+  "planner": {
+    "description": "Plans and suggests actions",
+    "commands": ["read"],
+    "max_per_minute": 30,
+    "requires_approval": true
+  },
+  "observer": {
+    "description": "Monitors and observes system",
+    "commands": ["read", "ps", "df", "free", "uptime"],
+    "max_per_minute": 120,
+    "requires_approval": false
+  },
+  "researcher": {
+    "description": "Researches and analyzes",
+    "commands": ["read", "grep", "find", "wc"],
+    "max_per_minute": 20,
+    "requires_approval": true
+  },
+  "communicator": {
+    "description": "Handles communication",
+    "commands": ["read", "write"],
+    "max_per_minute": 50,
+    "requires_approval": false
+  }
+}

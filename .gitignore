@@ -1,0 +1,58 @@
+# Environment
+.env
+node_modules/
+data/
+*.log
+
+# Lock files (don't commit locks - regenerate on install)
+pnpm-lock.yaml
+
+# Large ISO / image files
+*.iso
+*.img
+*.qcow2
+*.qcow
+*.vhd
+*.vmdk
+backbox-*.iso
+**/backbox-*.iso
+**/*.tar.gz
+**/*.zip
+**/*.bundle
+**/*.patch
+**/*.diff
+
+# Pack / temporary build files
+tmp_pack_*
+tmp/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# === One2lvOS runtime-generated / sensitive files ===
+
+# Security tokens (never commit)
+*.key
+*.pem
+opt/one2lv/core/token.key
+
+# Live memory & vector storage (runtime data)
+opt/one2lv/memory/*.json
+opt/one2lv/vector/*.json
+opt/one2lv/logs/*.log
+opt/one2lv/logs/*.log.err
+memory/
+vector/
+logs/
+
+# Build artifacts
+dist/
+build/
+*.exe
+*.msi
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp

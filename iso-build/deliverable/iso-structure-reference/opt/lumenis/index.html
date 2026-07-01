@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>One2lvOS • Lumenis v7.0 Unified Core + Kernel v3</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS3DRenderer.js"></script>
+    <style>
+        :root {
+            --bg-deep: #020617;
+            --bg-primary: #0a0a12;
+            --bg-card: #1a1a2e;
+            --accent: #00ffcc;
+            --accent-cyan: #00f5ff;
+            --accent-purple: #a855f7;
+            --accent-pink: #ff5c8a;
+            --accent-green: #5cff8a;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #a0a0c0;
+            --glass-bg: rgba(6, 6, 15, 0.75);
+            --glass-border: rgba(0, 245, 255, 0.35);
+            --terminal-green: #00ff88;
+            --danger: #f44336;
+            --glow-cyan: 0 0 20px rgba(0, 245, 255, 0.4);
+            --glow-pink: 0 0 20px rgba(244, 114, 182, 0.4);
+        }
+        
+        * { margin:0; padding:0; box-sizing:border-box; }
+        
+        body { 
+            background: radial-gradient(circle at center, #0a0a2a 0%, var(--bg-deep) 100%);
+            overflow: hidden; 
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; 
+            color: var(--text-primary); 
+        }
+
+        /* CRT Scanline Overlay */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
+            z-index: 9999;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        #webgl-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        #css3d-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        
+        /* Fixed HUD elements */
+        .hud-static-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+        .interactive { pointer-events: auto; }
+
+        header {
+            position: absolute; top: 0; width: 100%; padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(to bottom, rgba(2,6,23,0.9), transparent);
+            border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+        }
+        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo { font-size: 32px; filter: drop-shadow(0 0 10px var(--accent-cyan)); }
+        h1 { font-family: 'JetBrains Mono'; font-size: 1.4rem; font-weight: 700; color: var(--accent-cyan); letter-spacing: 2px; text-shadow: var(--glow-cyan); }
+        .subtitle { color: var(--text-secondary); font-size: 0.8rem; }
+
+        /* Window Manager & 3D Objects Content */
+        .window-3d { 
+            width: 420px; height: 360px;
+            background: var(--glass-bg); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); 
+            border-radius: 16px; 
+            box-shadow: inset 0 0 20px rgba(0, 245, 255, 0.05), 0 10px 40px rgba(0,0,0,0.8), var(--glow-cyan); 
+            display: flex; flex-direction: column; 
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+            position: relative;
+        }
+        .window-3d:hover {
+            box-shadow: inset 0 0 30px rgba(0, 245, 255, 0.1), 0 15px 50px rgba(0,0,0,0.9), 0 0 30px rgba(0, 245, 255, 0.4);
+            border-color: var(--accent-cyan);
+        }
+
+        /* Raccoon Stabilizer Module */
+        .raccoon-unit {
+            position: absolute; font-size: 45px;
+            top: -45px; right: -20px;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 50; filter: drop-shadow(0 0 10px rgba(0,255,255,0.6));
+            user-select: none; pointer-events: none;
+        }
+
+        .panel-header { 
+            padding: 12px 20px; 
+            background: rgba(0, 245, 255, 0.08);
+            border-bottom: 1px solid var(--glass-border); 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-radius: 16px 16px 0 0; cursor: move; user-select: none;
+        }
+        .panel-title { 
+            font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 700; 
+            color: var(--accent-cyan); text-transform: uppercase; 
+            text-shadow: 0 0 8px rgba(0, 245, 255, 0.5);
+        }
+        .panel-close { color: var(--accent-pink); cursor: pointer; font-weight: bold; font-size: 14px; }
+
+        .panel-content { flex: 1; padding: 18px; overflow-y: auto; font-family: 'JetBrains Mono'; font-size: 12px; line-height: 1.5; }
+        
+        /* Shared Elements styling */
+        .stat-row { margin-bottom: 12px; }
+        .stat-label { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--text-primary); font-weight: 600; font-size: 11px; }
+        .stat-bar { height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .stat-fill { 
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple), var(--accent-pink)); 
+            background-size: 200% 200%; animation: gradientShift 3s ease infinite;
+            box-shadow: var(--glow-pink); transition: width 0.4s ease;
+        }
+
+        .action-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .action-btn { 
+            flex: 1; padding: 8px 12px; min-width: 70px;
+            background: rgba(0, 245, 255, 0.05); border: 1px solid rgba(0, 245, 255, 0.25); 
+            color: var(--accent-cyan); border-radius: 6px; cursor: pointer; 
+            transition: all 0.2s; font-family: 'JetBrains Mono'; font-size: 11px;
+            text-transform: uppercase; letter-spacing: 1px; outline: none;
+        }
+        .action-btn:hover { background: var(--accent-cyan); color: #000; box-shadow: var(--glow-cyan); border-color: var(--accent-cyan); }
+        .action-btn:active { transform: scale(0.96); }
+
+        pre.code-block { background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: var(--terminal-green); overflow-y: auto; max-height: 95px; white-space: pre-wrap; font-family: 'JetBrains Mono'; }
+
+        /* Bottom Fixed Terminal and System Infrastructure */
+        #terminal-container { 
+            position: fixed; bottom: 0; left: 0; width: 100%; 
+            background: rgba(2, 6, 23, 0.95); border-top: 2px solid var(--accent-cyan); 
+            padding: 12px 40px; z-index: 1000;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+        }
+        #terminal-output { height: 75px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+        #terminal-input-line { display: flex; gap: 15px; align-items: center; }
+        #terminal-input { flex: 1; background: transparent; border: none; color: var(--text-primary); outline: none; font-size: 13px; font-family: 'JetBrains Mono'; }
+        
+        .mic-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--accent-cyan); background: rgba(0,245,255,0.1); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .mic-btn.listening { background: var(--danger); border-color: var(--danger); animation: pulse 1.5s infinite; }
+        
+        /* Floating Left Controls */
+        .velocity-hud { 
+            position: fixed; bottom: 160px; left: 40px; 
+            background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border); border-radius: 12px; 
+            padding: 12px 18px; width: 260px; z-index: 200; 
+        }
+        .slider-label { font-family: 'JetBrains Mono'; font-size: 11px; color: var(--accent-cyan); margin-bottom: 8px; display: flex; justify-content: space-between;}
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: var(--accent-cyan); cursor: pointer; margin-top: -5px; box-shadow: var(--glow-cyan); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+        /* OS Dock Elements */
+        #dock { position: fixed; top: 22px; right: 40px; display: flex; gap: 8px; z-index: 1000; }
+        .dock-btn { padding: 6px 12px; background: rgba(6,6,15,0.8); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 6px; font-family: 'JetBrains Mono'; font-size: 11px; cursor: pointer; }
+        .dock-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+        /* Network Status Display */
+        .ws-status { position: fixed; bottom: 160px; right: 40px; padding: 10px 20px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; display: flex; align-items: center; gap: 10px; z-index: 200; font-family:'JetBrains Mono'; font-size:11px;}
+        .ws-indicator { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); }
+        .ws-indicator.connected { background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
+
+        .combo-container { text-align: center; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .combo-metrics { font-size: 2.2rem; font-weight: bold; color: var(--accent-cyan); }
+
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes pulse { 0% {box-shadow: 0 0 0 0 rgba(244,67,54,0.4);} 70% {box-shadow: 0 0 0 10px rgba(244,67,54,0);} 100% {box-shadow: 0 0 0 0 rgba(244,67,54,0);} }
+    </style>
+</head>
+<body>
+
+<div id="webgl-bg"></div>
+<div id="css3d-container"></div>
+
+<div class="hud-static-layer">
+    <header class="interactive">
+        <div class="logo-area">
+            <div class="logo">🌷</div>
+            <div>
+                <h1>Lumenis Ultimate v7.0</h1>
+                <div class="subtitle">One2lvOS Unified Space Kernel Environment</div>
+            </div>
+        </div>
+    </header>
+
+    <div id="dock" class="interactive">
+        <button class="dock-btn" onclick="WM.toggle('panel-1')">Brawlhalla Core</button>
+        <button class="dock-btn" onclick="WM.toggle('panel-2')">NVIDIA Proxy</button>
+        <button class="dock-btn" onclick="WM.toggle('panel-3')">Network Route</button>
+        <button class="dock-btn" onclick="WM.toggle('panel-4')">Hardware Link</button>
+        <button class="dock-btn" onclick="WM.toggle('panel-5')">Performance Logic</button>
+    </div>
+
+    <div class="velocity-hud interactive">
+        <div class="slider-label"><span>QUANTUM METRIC SPATIAL VELOCITY</span> <span id="vel-value">1.0x</span></div>
+        <input type="range" id="velocity-slider" min="0.1" max="3" step="0.1" value="1">
+    </div>
+
+    <div class="ws-status interactive">
+        <div class="ws-indicator connected" id="wsIndicator"></div>
+        <span id="wsStatus">Kernel Direct Line Active</span>
+    </div>
+
+    <div id="terminal-container" class="interactive">
+        <div id="terminal-output">
+            <div style="color: var(--accent)">🌷 Lumenis v7.0 Kernel Architecture completely online.</div>
+            <div style="color: var(--text-muted)">Type or execute system commands. Enter "/help" inside console line for storage operations.</div>
+        </div>
+        <div id="terminal-input-line">
+            <span style="color:var(--accent-cyan); font-family:'JetBrains Mono'; font-weight:bold;">root@one2lvos:~#</span>
+            <input type="text" id="terminal-input" placeholder="Awaiting Input Manifold Vector Execution Command...">
+            <button class="mic-btn" id="micBtn" onclick="SpeechModule.toggle()">🎤</button>
+        </div>
+    </div>
+</div>
+
+<div id="window-templates" style="display:none;">
+
+    <div class="window-3d" id="panel-1">
+        <div class="raccoon-unit">🦝</div>
+        <div class="panel-header"><span class="panel-title">Brawlhalla Core Engine</span><span class="panel-close" onclick="WM.close('panel-1')">×</span></div>
+        <div class="panel-content">
+            <div class="stat-row">
+                <div class="stat-label"><span>QUEEN NAI ATTACK MATRIX FORCE</span><span>9.2/10</span></div>
+                <div class="stat-bar"><div class="stat-fill" style="width:92%"></div></div>
+            </div>
+            <div class="combo-container">
+                <div class="combo-metrics" id="ui-combo-count">0</div>
+                <div style="font-size:9px; color:var(--text-muted); letter-spacing:1px;">ACTIVE LIVE COMBOS HIT</div>
+            </div>
+            <div class="action-row">
+                <button class="action-btn" onclick="AppActions.simulateHit()">Execute Hit Vector</button>
+                <button class="action-btn" onclick="AppActions.resetCombo()" style="color:var(--accent-pink)">Flush Chain</button>
+            </div>
+            <div class="action-row">
+                <button class="action-btn" onclick="AppActions.triggerAndroidLaunch('brawlhalla')">Launch Remote Engine Instance</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="window-3d" id="panel-2">
+        <div class="raccoon-unit">🦝</div>
+        <div class="panel-header"><span class="panel-title">NVIDIA AI Proxy Manifold</span><span class="panel-close" onclick="WM.close('panel-2')">×</span></div>
+        <div class="panel-content">
+            <div class="action-row">
+                <button class="action-btn" onclick="AppActions.runAIProxy()">Inject Active Manifold</button>
+                <button class="action-btn" onclick="AppActions.generateCurl()">Generate Standard .CURL</button>
+            </div>
+            <pre class="code-block" id="ai-status">> Connection established secure pipelines. Awaiting tracking manifold allocation matrix.</pre>
+            <div class="vote-area" style="margin-top:10px;">
+                <div style="font-size:11px; margin-bottom:5px; color:var(--accent-purple)">Council Tactical Vote Path Strategy:</div>
+                <div class="action-row">
+                    <button class="action-btn" onclick="AppActions.castVote('Aggressive')">Aggressive</button>
+                    <button class="action-btn" onclick="AppActions.castVote('Defensive')">Defensive</button>
+                </div>
+                <div id="vote-results-box" style="font-size:10px; color:var(--text-secondary); margin-top:5px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="window-3d" id="panel-3">
+        <div class="raccoon-unit">🦝</div>
+        <div class="panel-header"><span class="panel-title">Network Routing Matrix</span><span class="panel-close" onclick="WM.close('panel-3')">×</span></div>
+        <div class="panel-content">
+            <div class="action-row">
+                <button class="action-btn" onclick="AppActions.triggerAndroidLaunch('twitch')">Initialize Twitch Pipeline</button>
+                <button class="action-btn" onclick="AppActions.triggerAndroidLaunch('discord')">Initialize Discord Link</button>
+            </div>
+            <div class="action-row">
+                <button class="action-btn" onclick="AppActions.toggleStreamEngine()" id="streamBtn" style="color:var(--accent-green)">Initialize Stream Layer Live</button>
+            </div>
+            <div style="margin-top:12px; font-size:11px; border-left: 2px solid var(--accent-pink); padding-left: 10px; color:var(--text-secondary);">
+                Subroutines mapped securely to system Android Intent infrastructure layout arrays.
+            </div>
+        </div>
+    </div>
+
+    <div class="window-3d" id="panel-4">
+        <div class="raccoon-unit">🦝</div>
+        <div class="panel-header"><span class="panel-title">Hardware Link Status</span><span class="panel-close" onclick="WM.close('panel-4')">×</span></div>
+        <div class="panel-content">
+            <div class="stat-row">
+                <div class="stat-label"><span>SAMSUNG A14 TERMINATION UPLINK</span><span>SYNCHRONIZED</span></div>
+                <div class="stat-bar"><div class="stat-fill" style="width:100%; background:var(--terminal-green)"></div></div>
+            </div>
+            <pre class="code-block" id="hardware-status-log">> Termux daemon process matrix running stable optimization loops.
+
+Power Matrix: 84% Capacity
+Wireless charging array: Balanced Threshold
+Awaiting execution of edge operations...</pre>
+        </div>
+    </div>
+
+    <div class="window-3d" id="panel-5">
+        <div class="raccoon-unit">🦝</div>
+        <div class="panel-header"><span class="panel-title">Performance Engine Core</span><span class="panel-close" onclick="WM.close('panel-5')">×</span></div>
+        <div class="panel-content">
+            <div class="stat-row">
+                <div class="stat-label"><span>AVERAGE INTERNAL ACTION DELAY</span><span id="perf-avg-delay">0ms</span></div>
+                <div class="stat-bar"><div class="stat-fill" id="perf-delay-bar" style="width:30%"></div></div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:11px; color:var(--text-secondary);">
+                <div>Best Operational Limit: <span id="perf-best" style="color:var(--accent)">0ms</span></div>
+                <div>Processed Paths: <span id="perf-total" style="color:var(--accent)">0</span></div>
+            </div>
+            <button class="action-btn" style="margin-top:15px; width:100%" onclick="AppActions.simulateSystemPerformance()">Process Network Metrics Simulation Path</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+/* ========================================================
+   VIRTUAL STORAGE CORE INTEGRATION VFS
+======================================================== */
+const VFS = {
+    write(key, value) { localStorage.setItem("vfs_core::" + key, value); },
+    read(key) { return localStorage.getItem("vfs_core::" + key); },
+    list() {
+        const results = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k.startsWith("vfs_core::")) results.push([k.replace("vfs_core::", ""), localStorage.getItem(k)]);
+        }
+        return results;
+    },
+    remove(key) { localStorage.removeItem("vfs_core::" + key); }
+};
+
+/* ========================================================
+   CORE KERNEL PLATFORM MATRIX EXECUTION CORE
+======================================================== */
+const KERNEL = {
+    modules: [],
+    boot() {
+        this.appendOutput("System Matrix Kernel initialization sequences completed smoothly.");
+        this.scheduler();
+    },
+    appendOutput(message, color = 'var(--text-primary)') {
+        const outBox = document.getElementById("terminal-output");
+        if(outBox) {
+            outBox.innerHTML += `<div style="color: ${color}">> ${message}</div>`;
+            outBox.scrollTop = outBox.scrollHeight;
+        }
+    },
+    dispatch(rawLine) {
+        const cmd = rawLine.trim();
+        if (!cmd) return;
+
+        this.appendOutput(cmd, 'var(--accent-green)');
+
+        if (cmd === "/help") {
+            this.appendOutput("Storage Virtual Commands Matrix: /ls , /write [key] [val] , /read [key] , /del [key] , /clear");
+            return;
+        }
+        if (cmd === "/clear") {
+            document.getElementById("terminal-output").innerHTML = "";
+            return;
+        }
+        if (cmd.startsWith("/ls")) {
+            this.appendOutput("VFS Index Manifest: " + JSON.stringify(VFS.list()));
+            return;
+        }
+        if (cmd.startsWith("/read ")) {
+            const targetKey = cmd.split(" ")[1];
+            this.appendOutput(`VFS Key [${targetKey}]: ` + VFS.read(targetKey));
+            return;
+        }
+        if (cmd.startsWith("/del ")) {
+            const targetKey = cmd.split(" ")[1];
+            VFS.remove(targetKey);
+            this.appendOutput(`Key [${targetKey}] dropped successfully.`);
+            return;
+        }
+        if (cmd.startsWith("/write ")) {
+            const parts = cmd.split(" ");
+            const targetKey = parts[1];
+            const targetVal = parts.slice(2).join(" ");
+            VFS.write(targetKey, targetVal);
+            this.appendOutput(`Key [${targetKey}] committed to VFS storage structures.`);
+            return;
+        }
+
+        // Module checks fallback
+        let resolved = false;
+        for (const mod of this.modules) {
+            const check = mod.exec(cmd);
+            if (check) {
+                this.appendOutput(check);
+                resolved = true;
+                break;
+            }
+        }
+        if(!resolved) {
+            this.appendOutput("Command mapped out parameters successfully into processing framework stack logic.", 'var(--text-secondary)');
+        }
+    },
+    scheduler() {
+        setInterval(() => {
+            localStorage.setItem("kernel_matrix::heartbeat", Date.now());
+            for (const mod of this.modules) { if (mod.tick) mod.tick(); }
+        }, 1000);
+    }
+};
+
+/* ========================================================
+   THREE.JS 3D HUD LAYOUT SPATIAL ENGINE MANAGER
+======================================================== */
+let scene, camera, renderer, cssRenderer;
+const spatialPanelsArray = [];
+const internalConfigObj = { speed: 1.0 };
+
+const WM = {
+    zMasterIndex: 100,
+    activeStates: {},
+    
+    init() {
+        // Build 3D Scenery Framework
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 5000);
+        camera.position.set(0, 0, 950);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('webgl-bg').appendChild(renderer.domElement);
+
+        cssRenderer = new THREE.CSS3DRenderer();
+        cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('css3d-container').appendChild(cssRenderer.domElement);
+
+        // Build Particle Network Fields
+        const particleGeometry = new THREE.BufferGeometry();
+        const particleCount = 250;
+        const positions = new Float32Array(particleCount * 3);
+        for(let i=0; i<particleCount*3; i+=3) {
+            positions[i] = (Math.random() - 0.5) * 1600;
+            positions[i+1] = (Math.random() - 0.5) * 1000;
+            positions[i+2] = (Math.random() - 0.5) * 800;
+        }
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const particleMaterial = new THREE.PointsMaterial({ size: 3, color: 0x00f5ff, transparent: true, opacity: 0.4 });
+        const particleFieldMesh = new THREE.Points(particleGeometry, particleMaterial);
+        scene.add(particleFieldMesh);
+
+        window.addEventListener('resize', this.onResizeLayout, false);
+
+        // Construct Individual Windows Into 3D Coordinate Space Grid Planes
+        this.instantiateSpatialNode('panel-1', -460, 160, 0);
+        this.instantiateSpatialNode('panel-2', 0, 160, 0);
+        this.instantiateSpatialNode('panel-3', 460, 160, 0);
+        this.instantiateSpatialNode('panel-4', -230, -210, 0);
+        this.instantiateSpatialNode('panel-5', 230, -210, 0);
+
+        this.animateLoop();
+    },
+
+    instantiateSpatialNode(elementId, x, y, z) {
+        const targetElementSource = document.getElementById(elementId);
+        const parentTemplateContainer = document.getElementById('window-templates');
+        
+        // Relocate element out of hidden templates segment cleanly
+        parentTemplateContainer.removeChild(targetElementSource);
+        document.body.appendChild(targetElementSource);
+        
+        targetElementSource.style.position = 'absolute';
+        targetElementSource.style.display = 'flex';
+
+        const object3DRepresentation = new THREE.CSS3DObject(targetElementSource);
+        object3DRepresentation.position.set(x, y, z);
+        scene.add(object3DRepresentation);
+
+        // Setup custom structural alignment tracking values
+        object3DRepresentation.userData = {
+            baseX: x, baseY: y, baseZ: z,
+            targetX: x, targetY: y, targetZ: z,
+            rotX: 0, rotY: 0, rotZ: 0,
+            elementId: elementId
+        };
+
+        spatialPanelsArray.push(object3DRepresentation);
+        this.activeStates[elementId] = true;
+        this.bindDragInteractions(targetElementSource, object3DRepresentation);
+    },
+
+    bindDragInteractions(domElement, obj3D) {
+        const headerBar = domElement.querySelector('.panel-header');
+        let activeDragIndicator = false;
+        let pointerStartX = 0, pointerStartY = 0;
+
+        headerBar.addEventListener('mousedown', (e) => {
+            activeDragIndicator = true;
+            pointerStartX = e.clientX;
+            pointerStartY = e.clientY;
+            this.pushToFront(domElement);
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!activeDragIndicator) return;
+            const deltaX = e.clientX - pointerStartX;
+            const deltaY = e.clientY - pointerStartY;
+            pointerStartX = e.clientX;
+            pointerStartY = e.clientY;
+
+            obj3D.userData.targetX += deltaX;
+            obj3D.userData.targetY -= deltaY; // Invert coordinate vector metrics for 3D grid systems mapping perfectly
+            
+            // Add aesthetic dynamic rotation drag velocity metrics torque
+            obj3D.userData.rotY = (deltaX * 0.015);
+            obj3D.userData.rotX = (deltaY * 0.015);
+        });
+
+        document.addEventListener('mouseup', () => {
+            if(activeDragIndicator) {
+                activeDragIndicator = false;
+                obj3D.userData.rotY = 0;
+                obj3D.userData.rotX = 0;
+            }
+        });
+    },
+
+    pushToFront(domElement) {
+        this.zMasterIndex += 5;
+        domElement.style.zIndex = this.zMasterIndex;
+    },
+
+    toggle(id) {
+        const targetObj = spatialPanelsArray.find(o => o.userData.elementId === id);
+        if(!targetObj) return;
+
+        if (this.activeStates[id]) {
+            targetObj.element.style.display = 'none';
+            this.activeStates[id] = false;
+        } else {
+            targetObj.element.style.display = 'flex';
+            this.activeStates[id] = true;
+            this.pushToFront(targetObj.element);
+        }
+    },
+
+    close(id) {
+        const targetObj = spatialPanelsArray.find(o => o.userData.elementId === id);
+        if(targetObj) {
+            targetObj.element.style.display = 'none';
+            this.activeStates[id] = false;
+        }
+    },
+
+    onResizeLayout() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        cssRenderer.setSize(window.innerWidth, window.innerHeight);
+    },
+
+    animateLoop() {
+        requestAnimationFrame(() => this.animateLoop());
+
+        const temporalTimeClock = Date.now() * 0.001 * internalConfigObj.speed;
+
+        spatialPanelsArray.forEach(obj => {
+            // Smoothly ease standard tracking coordinates metrics vectors
+            obj.position.x += (obj.userData.targetX - obj.position.x) * 0.15;
+            obj.position.y += (obj.userData.targetY - obj.position.y) * 0.15;
+            obj.position.z += (obj.userData.targetZ - obj.position.z) * 0.15;
+
+            // Apply light aesthetic cosmic hover floating parameters to modules
+            const uniquelyIdentifiedOffset = obj.userData.elementId.charCodeAt(6) * 10;
+            obj.position.y += Math.sin(temporalTimeClock + uniquelyIdentifiedOffset) * 0.22;
+
+            // Smooth torque corrections matrix calculations
+            obj.rotation.x += (obj.userData.rotX - obj.rotation.x) * 0.1;
+            obj.rotation.y += (obj.userData.rotY - obj.rotation.y) * 0.1;
+        });
+
+        renderer.render(scene, camera);
+        cssRenderer.render(scene, camera);
+    }
+};
+
+/* ========================================================
+   APPLICATION FUNCTION INTERACTION PIPELINES
+======================================================== */
+const AppActions = {
+    comboTrackingMetricValue: 0,
+    voteCountMatrixMap: { Aggressive: 4, Defensive: 2 },
+    performanceTrackingHistoryTotal: 0,
+    historicalBestPerformanceLag: 12,
+    streamingEnginePipelineActive: false,
+
+    simulateHit() {
+        this.comboTrackingMetricValue++;
+        const targetNodeLabel = document.getElementById("ui-combo-count");
+        if(targetNodeLabel) targetNodeLabel.innerText = this.comboTrackingMetricValue;
+        
+        // Dynamically trigger raccoon stabilization feedback logic alert
+        if(this.comboTrackingMetricValue % 5 === 0) {
+            KERNEL.appendOutput(`Combo sequence optimization unlocked milestone: ${this.comboTrackingMetricValue} links verified!`, 'var(--accent-pink)');
+            this.triggerRaccoonAnchoringFeedback();
+        }
+    },
+
+    resetCombo() {
+        this.comboTrackingMetricValue = 0;
+        const targetNodeLabel = document.getElementById("ui-combo-count");
+        if(targetNodeLabel) targetNodeLabel.innerText = 0;
+        KERNEL.appendOutput("Combo allocation tracking matrix sequences dropped cleanly.");
+    },
+
+    triggerRaccoonAnchoringFeedback() {
+        spatialPanelsArray.forEach(p => {
+            p.element.classList.add('stabilized');
+            setTimeout(() => { p.element.classList.remove('stabilized'); }, 1400);
+        });
+    },
+
+    triggerAndroidLaunch(targetSystemIntentTargetPackage) {
+        KERNEL.appendOutput(`Dispatched structural initialization intent route vector sequence map: Intent://android.system.core/launch/${targetSystemIntentTargetPackage}`, 'var(--accent-cyan)');
+    },
+
+    runAIProxy() {
+        const trackingStatusWindowTerminalCodeBox = document.getElementById("ai-status");
+        if (trackingStatusWindowTerminalCodeBox) {
+            trackingStatusWindowTerminalCodeBox.innerText = `> Injecting manifold operations vector map...\n> Processing localized response pathways tracking sequences...\n> Query verified through secure proxy framework pipeline arrays inside local storage structure grids.`;
+        }
+    },
+
+    generateCurl() {
+        const trackingStatusWindowTerminalCodeBox = document.getElementById("ai-status");
+        if (trackingStatusWindowTerminalCodeBox) {
+            trackingStatusWindowTerminalCodeBox.innerText = `curl -X POST "http://127.0.0.1:8080/api/v1/nvidia/proxy" \\\n  -H "Authorization: Bearer One2lvOS_Lumenis_Secure_v7" \\\n  -d '{"manifold_resonance_target": "73Hz"}'`;
+        }
+    },
+
+    castVote(selectedPathKey) {
+        if(this.voteCountMatrixMap[selectedPathKey] !== undefined) {
+            this.voteCountMatrixMap[selectedPathKey]++;
+        } else {
+            this.voteCountMatrixMap[selectedPathKey] = 1;
+        }
+        
+        const outputResultsTargetLabelBox = document.getElementById("vote-results-box");
+        if (outputResultsTargetLabelBox) {
+            outputResultsTargetLabelBox.innerHTML = `Current Grid Paths Metrics: Aggressive (${this.voteCountMatrixMap.Aggressive}) | Defensive (${this.voteCountMatrixMap.Defensive})`;
+        }
+        KERNEL.appendOutput(`Vote counted securely towards operational approach vector design parameters: ${selectedPathKey}`);
+    },
+
+    toggleStreamEngine() {
+        const streamBtn = document.getElementById("streamBtn");
+        this.streamingEnginePipelineActive = !this.streamingEnginePipelineActive;
+        if(this.streamingEnginePipelineActive) {
+            streamBtn.innerText = "Terminate Live Stream Array Feed";
+            streamBtn.style.color = "var(--danger)";
+            KERNEL.appendOutput("OBS Streaming Engine broadcast channel pipeline verified active live.", 'var(--accent-green)');
+        } else {
+            streamBtn.innerText = "Initialize Stream Layer Live";
+            streamBtn.style.color = "var(--accent-green)";
+            KERNEL.appendOutput("OBS Streaming Engine safe shutdown sequences deployed.");
+        }
+    },
+
+    simulateSystemPerformance() {
+        this.performanceTrackingHistoryTotal++;
+        const simulatedActionDelayResult = Math.floor(Math.random() * 45) + 8;
+        
+        if(simulatedActionDelayResult < this.historicalBestPerformanceLag) {
+            this.historicalBestPerformanceLag = simulatedActionDelayResult;
+        }
+
+        document.getElementById("perf-avg-delay").innerText = `${simulatedActionDelayResult}ms`;
+        document.getElementById("perf-best").innerText = `${this.historicalBestPerformanceLag}ms`;
+        document.getElementById("perf-total").innerText = this.performanceTrackingHistoryTotal;
+
+        const fillBar = document.getElementById("perf-delay-bar");
+        const percentageScaleWidthValue = Math.min(100, (simulatedActionDelayResult / 60) * 100);
+        fillBar.style.width = `${percentageScaleWidthValue}%`;
+    }
+};
+
+/* ========================================================
+   INTEGRATED VOICE INTERACTION AND SYSTEM INPUT SPEECH LAYER
+======================================================== */
+const SpeechModule = {
+    recognitionInstance: null,
+    activeStatusTrackingFlag: false,
+
+    init() {
+        window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (window.SpeechRecognition) {
+            this.recognitionInstance = new window.SpeechRecognition();
+            this.recognitionInstance.continuous = false;
+            this.recognitionInstance.interimResults = false;
+            this.recognitionInstance.lang = 'en-US';
+
+            this.recognitionInstance.onstart = () => {
+                this.activeStatusTrackingFlag = true;
+                const micBtn = document.getElementById("micBtn");
+                if(micBtn) micBtn.classList.add('listening');
+            };
+
+            this.recognitionInstance.onend = () => {
+                this.activeStatusTrackingFlag = false;
+                const micBtn = document.getElementById("micBtn");
+                if(micBtn) micBtn.classList.remove('listening');
+            };
+
+            this.recognitionInstance.onresult = (event) => {
+                const speechToTextCapturedString = event.results[0][0].transcript;
+                const inputFieldNode = document.getElementById("terminal-input");
+                if (inputFieldNode) {
+                    inputFieldNode.value = speechToTextCapturedString;
+                    KERNEL.dispatch(speechToTextCapturedString);
+                    inputFieldNode.value = "";
+                }
+            };
+        }
+    },
+
+    toggle() {
+        if(!this.recognitionInstance) {
+            KERNEL.appendOutput("Speech Recognition system packages are not supported by the current client binary environment profiles.", 'var(--danger)');
+            return;
+        }
+        if (this.activeStatusTrackingFlag) {
+            this.recognitionInstance.stop();
+        } else {
+            this.recognitionInstance.start();
+        }
+    }
+};
+
+/* ========================================================
+   CORE SYSTEM DEPLOYMENT MATRIX BOOT INITIALIZATION
+======================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+    // Initialise 3D HUD Interface structures
+    WM.init();
+
+    // Initialise Voice Engine APIs
+    SpeechModule.init();
+
+    // Initialise System Shell Operations Core
+    KERNEL.boot();
+
+    // Setup input terminal event pipelines listener captures
+    const termInputNodeBox = document.getElementById("terminal-input");
+    termInputNodeBox.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            KERNEL.dispatch(termInputNodeBox.value);
+            termInputNodeBox.value = "";
+        }
+    });
+
+    // Capture speed modification slider matrix configuration adjustments
+    const velSliderNodeRange = document.getElementById("velocity-slider");
+    velSliderNodeRange.addEventListener("input", (e) => {
+        const val = e.target.value;
+        document.getElementById("vel-value").innerText = `${val}x`;
+        internalConfigObj.speed = parseFloat(val);
+    });
+});
+</script>
+</body>
+</html>

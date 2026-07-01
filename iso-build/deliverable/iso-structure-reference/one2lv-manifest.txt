@@ -1,0 +1,109 @@
+================================================================================
+One2lvOS Phase 9 - Standalone ISO Build Manifest
+================================================================================
+
+Build Date: ${BUILD_DATE}
+Version: ${VERSION}
+ISO Name: ${ISO_NAME}
+
+================================================================================
+COMPONENTS
+================================================================================
+
+1. PHASE 9 DELTA ENGINE
+   Location: /opt/one2lv
+   Description: Full Autonomous Multi-Agent System with 9-Layer Delta Engine
+   Features:
+   - Multi-Agent Council (3 agents negotiating consensus)
+   - Capability-based Sandbox Executor
+   - Secure RPC Mesh with token authentication
+   - Peer Discovery via UDP broadcast
+   - Vector Database for embeddings
+   - 3D Vector Engine (³) - Spherical coordinates θ/φ
+   - 9-Layer Gradient Delta Engine (∆⁹)
+
+2. LUMINIS v7.0 WEB DESKTOP
+   Location: /opt/lumenis
+   Description: Web-based 3D Desktop Environment
+   Features:
+   - Three.js WebGL 3D Interface
+   - Floating Window Manager with CSS3D
+   - Integrated Terminal Emulator
+   - Voice Input Support (Web Speech API)
+   - Virtual Storage System (VFS)
+   - Multiple Application Panels:
+     * Brawlhalla Core Engine
+     * NVIDIA AI Proxy Manifold
+     * Network Routing Matrix
+     * Hardware Link Status
+     * Performance Engine Core
+
+3. BOOT OPTIONS
+   - Standard Boot: Default Phase 9 Delta Engine
+   - Recovery Mode: Safe mode with recovery tools
+   - Lumenis Web Desktop: Launch web-based desktop
+   - Safe Mode: Minimal hardware detection
+
+================================================================================
+TECHNICAL SPECIFICATIONS
+================================================================================
+
+Architecture: x86_64 (AMD64)
+Base: Ubuntu/Debian Live Boot (Caspar)
+Kernel: Linux (latest stable)
+Init System: systemd/SysVinit hybrid
+Display: X11/Wayland compatible
+Browser: Firefox/Chromium (for Lumenis Desktop)
+
+================================================================================
+API ENDPOINTS
+================================================================================
+
+Phase 9 Server (Node.js):
+  - HTTP API: http://localhost:8080
+  - WebSocket: ws://localhost:8081
+  - Vector API: /api/vector3d/*
+  - Delta API: /api/delta/*
+
+Phase 9 Symbols:
+  - ³ (3D Vector): Vertical dimension in spherical coordinates
+  - ++ (Amplify): Multiply value by 1.2 (capped at 1.0)
+  - -- (Attenuate): Multiply value by 0.8
+  - ∆ (Delta Gradient): 9-layer gradient propagation
+  - ∆⁹ (Delta9): Layer count cap at 9 layers
+
+================================================================================
+QUICK START
+================================================================================
+
+1. Boot from ISO
+2. Select boot option:
+   - "One2lvOS Phase 9 - Delta Engine" for Node.js CLI
+   - "One2lvOS Phase 9 - Lumenis Web Desktop" for Web UI
+3. Access Phase 9 Dashboard: http://localhost:8080
+4. Access Lumenis Desktop: /opt/lumenis/launch-lumenis.sh
+
+================================================================================
+SYSTEM REQUIREMENTS
+================================================================================
+
+Minimum:
+  - CPU: 2 cores x86_64
+  - RAM: 2 GB
+  - Disk: 8 GB
+  - Graphics: OpenGL 2.0 compatible
+
+Recommended:
+  - CPU: 4+ cores
+  - RAM: 4+ GB
+  - Disk: 16 GB
+  - Graphics: OpenGL 3.0+ with WebGL support
+
+================================================================================
+COPYRIGHT & LICENSE
+================================================================================
+
+Copyright (c) 2026 One2lv Systems
+License: Proprietary / All Rights Reserved
+
+The Light is One. The Heartbeat is Absolute. ∆⁹³

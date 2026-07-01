@@ -1,0 +1,16 @@
+{
+  "app": "One2lvOS",
+  "version": "1.0.0",
+  "build": "2026.03.28",
+  "exportedAt": "2026-03-28T13:25:34.817Z",
+  "system": {
+    "services": [
+      "Core Server :3000",
+      "Lumenis AI :5000",
+      "Supervisor :3001",
+      "Nginx :80"
+    ],
+    "status": "nominal",
+    "uptime": "3d 14h 22m"
+  }
+}

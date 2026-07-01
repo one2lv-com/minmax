@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Lumenis v7.0 Web Desktop
+GenericName=Web Desktop Environment
+Comment=One2lvOS Web Desktop with 3D HUD Interface
+Exec=/opt/lumenis/launch-lumenis.sh
+Icon=computer
+Terminal=false
+Categories=System;DesktopEnvironment;
+Keywords=Desktop;Web;3D;HUD;Lumenis;

@@ -1,0 +1,1 @@
+import express from "express"; import { requireAuth } from "../lib/auth.js"; import { listJobs } from "../lib/jobs.js"; const router=express.Router(); router.get('/', requireAuth, (_req,res)=>res.json({ok:true,jobs:listJobs()})); export default router;

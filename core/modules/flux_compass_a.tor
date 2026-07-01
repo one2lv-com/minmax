@@ -1,0 +1,8 @@
+{
+    "module": "FluxCompass",
+    "version": "1.0.a",
+    "logic": "Orientation-to-Velocity Mapping",
+    "gate": "Witness_Override",
+    "vector_calc": "Math.atan2(delta.y, delta.x) * (180 / Math.PI)",
+    "distributed_sync": "TPB_INFOHASH_LINK"
+}

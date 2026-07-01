@@ -1,0 +1,50 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+BASE=~/one2lvos_final
+MOD_DIR=$BASE/infinity-glass/modules
+
+cmd=$1
+mod=$2
+
+case "$cmd" in
+
+list)
+
+echo "=== One2lvOS Modules ==="
+ls $MOD_DIR | sed 's/.sh//'
+;;
+
+run)
+
+if [ -f "$MOD_DIR/$mod.sh" ]; then
+bash "$MOD_DIR/$mod.sh"
+else
+echo "Module not found"
+fi
+;;
+
+status)
+
+curl -s http://127.0.0.1:3000/api/status
+
+;;
+
+reactor)
+
+echo "Reactor Log:"
+tail -n 20 $BASE/reactor_core/logs/build.log
+
+;;
+
+*)
+
+echo ""
+echo "Commands:"
+echo "one2lv-cli list"
+echo "one2lv-cli run <module>"
+echo "one2lv-cli status"
+echo "one2lv-cli reactor"
+
+;;
+
+esac

@@ -1,0 +1,75 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'opt/**'
+      - 'windows/**'
+      - 'package.json'
+      - '.github/workflows/build-windows.yml'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test Cross-Platform
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: opt/one2lv
+        run: npm install --no-audit --no-fund
+
+      - name: Smoke test (platform.js)
+        working-directory: opt/one2lv
+        run: |
+          node --input-type=module -e "
+            import { getFiles, getDirs, ensureDirs, describePlatform } from './core/platform.js';
+            console.log('Platform:', describePlatform());
+            console.log('Dirs:', JSON.stringify(getDirs(), null, 2));
+            ensureDirs();
+            console.log('[OK] platform utility works on ' + process.platform);
+          "
+
+  build-windows:
+    name: Build Windows Installer
+    runs-on: windows-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: opt/one2lv
+        run: npm install --no-audit --no-fund
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build installer
+        run: .\windows\scripts\build-windows.ps1 -SkipTests
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: one2lvos-phase9-installer
+          path: windows/dist/*.exe
+          if-no-files-found: warn
+          retention-days: 30

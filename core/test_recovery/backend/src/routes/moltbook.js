@@ -1,0 +1,1 @@
+import express from "express"; import { moltbookGet } from "../lib/moltbook.js"; const router=express.Router(); router.get('/me', async (_req,res)=>{ try{ res.json({ok:true,profile:await moltbookGet('agents/me')}); } catch(error){ res.status(400).json({ok:false,error:error.message}); }}); export default router;

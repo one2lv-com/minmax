@@ -1,0 +1,1 @@
+import express from "express"; import { listDriveFiles } from "../lib/drive.js"; const router=express.Router(); router.get('/list', async (_req,res)=>{ try{ res.json({ok:true,files:await listDriveFiles()}); } catch(error){ res.status(400).json({ok:false,error:error.message}); }}); export default router;

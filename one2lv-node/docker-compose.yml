@@ -1,0 +1,14 @@
+services:
+api:
+build: ./api
+container_name: one2lvOs-api
+ports:
+- "8080:8080"
+volumes:
+- ./logs:/app/logs
+restart: always
+
+sandbox:
+build: ./sandbox
+container_name: one2lvOs-sandbox
+restart: always

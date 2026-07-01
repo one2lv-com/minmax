@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌷 Lumenis Ultimate v7.0</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #0a0a12;
+      --bg-card: #1a1a2e;
+      --accent: #8a5cff;
+      --accent-pink: #ff5c8a;
+      --accent-green: #5cff8a;
+      --text: #ffffff;
+      --text-muted: #a0a0c0;
+    }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+    header {
+      text-align: center;
+      padding: 40px 0;
+      background: linear-gradient(135deg, var(--bg-card), var(--bg-primary));
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .logo { font-size: 80px; filter: drop-shadow(0 0 30px rgba(138, 92, 255, 0.5)); }
+    h1 { font-size: 2.5rem; background: linear-gradient(90deg, var(--accent), var(--accent-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: var(--text-muted); margin-top: 10px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-top: 30px; }
+
+    .card {
+      background: var(--bg-card);
+      border: 2px solid #2a2a4e;
+      border-radius: 15px;
+      padding: 25px;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover { border-color: var(--accent); transform: translateY(-5px); }
+    .card h2 { color: var(--accent); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+    .card h2 .icon { font-size: 1.5rem; }
+
+    /* Response Time */
+    .response-meter { height: 30px; background: #0a0a12; border-radius: 15px; overflow: hidden; margin: 15px 0; }
+    .response-bar { height: 100%; background: linear-gradient(90deg, var(--accent-green), var(--accent)); border-radius: 15px; transition: width 0.3s ease; }
+    .response-bar.slow { background: linear-gradient(90deg, #ff5c5c, #ff8a5c); }
+    .response-bar.fast { background: linear-gradient(90deg, var(--accent-green), #5cffaa); }
+
+    .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #2a2a4e; }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { color: var(--text-muted); }
+    .stat-value { font-weight: bold; color: var(--accent); }
+
+    /* Voice Commands */
+    .voice-active { display: flex; align-items: center; gap: 15px; margin: 15px 0; }
+    .voice-btn {
+      padding: 15px 30px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .voice-btn:hover { background: var(--accent-pink); transform: scale(1.05); }
+    .voice-btn.active { background: var(--accent-green); animation: pulse 1s infinite; }
+
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(92, 255, 138, 0.4); } 50% { box-shadow: 0 0 0 20px rgba(92, 255, 138, 0); } }
+
+    .voice-history { max-height: 200px; overflow-y: auto; margin-top: 15px; }
+    .voice-cmd { padding: 10px; background: #0a0a12; border-radius: 8px; margin-bottom: 8px; }
+    .voice-cmd .cmd { color: var(--accent); font-weight: bold; }
+    .voice-cmd .resp { color: var(--text-muted); margin-top: 5px; }
+
+    /* Council Voting */
+    .vote-options { display: grid; gap: 10px; margin-top: 15px; }
+    .vote-btn {
+      padding: 12px;
+      background: #0a0a12;
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .vote-btn:hover { background: var(--accent); }
+    .vote-btn.selected { background: var(--accent); border-color: var(--accent-pink); }
+
+    .vote-results { margin-top: 15px; }
+    .vote-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .vote-label { width: 100px; color: var(--text-muted); }
+    .vote-fill { height: 20px; background: var(--accent); border-radius: 10px; min-width: 10px; }
+    .vote-count { color: var(--accent); font-weight: bold; }
+
+    /* Steam */
+    .steam-status { display: flex; align-items: center; gap: 15px; padding: 15px; background: #0a0a12; border-radius: 10px; margin: 15px 0; }
+    .steam-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--accent); }
+    .steam-info .name { font-weight: bold; font-size: 1.1rem; }
+    .steam-info .status { color: var(--accent-green); font-size: 0.9rem; }
+    .steam-link { color: var(--accent); text-decoration: none; }
+    .steam-link:hover { text-decoration: underline; }
+
+    /* Telemetry */
+    .combo-display { text-align: center; padding: 30px; background: #0a0a12; border-radius: 15px; margin: 15px 0; }
+    .combo-count { font-size: 4rem; font-weight: bold; color: var(--accent); }
+    .combo-label { color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; }
+    .combo-active .combo-count { color: var(--accent-pink); animation: glow 0.5s infinite; }
+
+    @keyframes glow { 0%, 100% { text-shadow: 0 0 20px var(--accent-pink); } 50% { text-shadow: 0 0 40px var(--accent-pink); } }
+
+    /* OBS */
+    .obs-scenes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+    .scene-btn {
+      padding: 15px;
+      background: #0a0a12;
+      border: 2px solid #2a2a4e;
+      border-radius: 10px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .scene-btn:hover { border-color: var(--accent); }
+    .scene-btn.active { border-color: var(--accent-green); background: rgba(92, 255, 138, 0.1); }
+
+    .stream-status { display: flex; align-items: center; gap: 15px; margin-top: 15px; }
+    .stream-indicator { width: 15px; height: 15px; border-radius: 50%; background: #ff5c5c; }
+    .stream-indicator.live { background: var(--accent-green); animation: pulse 2s infinite; }
+
+    /* Terminal */
+    .terminal { background: #000; border-radius: 10px; overflow: hidden; margin-top: 15px; }
+    .terminal-header { padding: 10px 15px; background: var(--bg-card); display: flex; align-items: center; gap: 10px; }
+    .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .terminal-dot.red { background: #ff5c5c; }
+    .terminal-dot.yellow { background: #ffaa5c; }
+    .terminal-dot.green { background: var(--accent-green); }
+    .terminal-body { padding: 15px; height: 200px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+    .terminal-line { margin: 5px 0; }
+    .terminal-line.input { color: var(--accent-green); }
+    .terminal-line.output { color: var(--text); }
+    .terminal-input { display: flex; align-items: center; padding: 10px 15px; background: #0a0a0a; }
+    .terminal-input span { color: var(--accent-green); margin-right: 10px; }
+    .terminal-input input { flex: 1; background: transparent; border: none; color: var(--text); font-family: inherit; outline: none; }
+
+    /* WebSocket Status */
+    .ws-status { position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: var(--bg-card); border-radius: 20px; display: flex; align-items: center; gap: 10px; }
+    .ws-indicator { width: 10px; height: 10px; border-radius: 50%; background: #ff5c5c; }
+    .ws-indicator.connected { background: var(--accent-green); }
+
+    /* Action Buttons */
+    .action-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .action-btn:hover { background: var(--accent-pink); }
+
+    /* Chat simulation */
+    .chat-sim { max-height: 200px; overflow-y: auto; }
+    .chat-msg { padding: 8px 12px; background: #0a0a12; border-radius: 8px; margin-bottom: 8px; }
+    .chat-msg strong { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🌷</div>
+    <h1>Lumenis Ultimate v7.0</h1>
+    <p class="subtitle">One2lv OS - AI Gaming Assistant with Voice Commands</p>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <!-- Response Time Card -->
+      <div class="card">
+        <h2><span class="icon">⚡</span> Player Response</h2>
+        <div class="combo-display" id="responseDisplay">
+          <div class="combo-count" id="avgResponse">0</div>
+          <div class="combo-label">ms Average Response</div>
+        </div>
+        <div class="response-meter">
+          <div class="response-bar" id="responseBar" style="width: 0%"></div>
+        </div>
+        <div class="stat-row"><span class="stat-label">Target</span><span class="stat-value">50ms</span></div>
+        <div class="stat-row"><span class="stat-label">Best</span><span class="stat-value" id="bestResponse">0ms</span></div>
+        <div class="stat-row"><span class="stat-label">Total Actions</span><span class="stat-value" id="totalActions">0</span></div>
+        <div class="stat-row"><span class="stat-label">Consistency</span><span class="stat-value" id="consistency">100%</span></div>
+        <button class="action-btn" onclick="simulateAction()">Simulate Action</button>
+      </div>
+
+      <!-- Voice Commands Card -->
+      <div class="card">
+        <h2><span class="icon">🎤</span> Voice Commands</h2>
+        <p style="color: var(--text-muted); margin-bottom: 15px;">Say "Hey Lumen" to activate</p>
+        <div class="voice-active">
+          <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">Start Voice</button>
+          <span id="voiceStatus">Click to enable voice recognition</span>
+        </div>
+        <div class="voice-history" id="voiceHistory"></div>
+        <h3 style="margin-top: 20px; color: var(--accent);">Available Commands:</h3>
+        <div style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.8;">
+          • "Hey Lumen, combo check"<br>
+          • "Hey Lumen, stats"<br>
+          • "Hey Lumen, highlight"<br>
+          • "Hey Lumen, steam status"
+        </div>
+      </div>
+
+      <!-- Combo Detector Card -->
+      <div class="card" id="comboCard">
+        <h2><span class="icon">🎯</span> Combo Detector</h2>
+        <div class="combo-display" id="comboDisplay">
+          <div class="combo-count" id="comboCount">0</div>
+          <div class="combo-label">Hit Combo</div>
+        </div>
+        <button class="action-btn" onclick="simulateHit()">Simulate Hit</button>
+        <button class="action-btn" onclick="resetCombo()" style="background: #ff5c5c;">Reset Combo</button>
+      </div>
+
+      <!-- Council Voting Card -->
+      <div class="card">
+        <h2><span class="icon">🗳️</span> AI Council Vote</h2>
+        <p style="color: var(--text-muted); margin-bottom: 15px;">Vote for the next strategy</p>
+        <div class="vote-options">
+          <button class="vote-btn" onclick="castVote('Aggressive')">Aggressive</button>
+          <button class="vote-btn" onclick="castVote('Defensive')">Defensive</button>
+          <button class="vote-btn" onclick="castVote('Balanced')">Balanced</button>
+          <button class="vote-btn" onclick="castVote('Experimental')">Experimental</button>
+        </div>
+        <div class="vote-results" id="voteResults"></div>
+      </div>
+
+      <!-- Steam Integration Card -->
+      <div class="card">
+        <h2><span class="icon">🎮</span> Steam Live</h2>
+        <div class="steam-status" id="steamStatus">
+          <div class="steam-avatar"></div>
+          <div class="steam-info">
+            <div class="name">Not Connected</div>
+            <div class="status">Configure API key in .env</div>
+          </div>
+        </div>
+        <button class="action-btn" onclick="refreshSteam()">Refresh Status</button>
+        <div id="steamData" style="margin-top: 15px;"></div>
+      </div>
+
+      <!-- OBS Control Card -->
+      <div class="card">
+        <h2><span class="icon">📺</span> OBS Control</h2>
+        <div class="obs-scenes" id="obsScenes">
+          <button class="scene-btn" onclick="switchScene('Main')">Main</button>
+          <button class="scene-btn" onclick="switchScene('Highlight')">Highlight</button>
+          <button class="scene-btn" onclick="switchScene('Gameplay')">Gameplay</button>
+          <button class="scene-btn" onclick="switchScene('BRB')">BRB</button>
+        </div>
+        <div class="stream-status">
+          <div class="stream-indicator" id="streamIndicator"></div>
+          <span id="streamStatus">Stream: Offline</span>
+        </div>
+        <button class="action-btn" id="streamBtn" onclick="toggleStream()" style="background: var(--accent-green);">Start Stream</button>
+      </div>
+
+      <!-- Terminal Card -->
+      <div class="card" style="grid-column: span 2;">
+        <h2><span class="icon">💻</span> Command Terminal</h2>
+        <div class="terminal">
+          <div class="terminal-header">
+            <div class="terminal-dot red"></div>
+            <div class="terminal-dot yellow"></div>
+            <div class="terminal-dot green"></div>
+            <span style="margin-left: 10px;">Lumenis Terminal</span>
+          </div>
+          <div class="terminal-body" id="terminalBody">
+            <div class="terminal-line output">🌷 Lumenis v7.0 ready</div>
+            <div class="terminal-line output">Type "help" for commands</div>
+          </div>
+          <div class="terminal-input">
+            <span>$</span>
+            <input type="text" id="terminalInput" placeholder="Enter command..." onkeydown="handleTerminal(event)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws-status">
+    <div class="ws-indicator" id="wsIndicator"></div>
+    <span id="wsStatus">Connecting...</span>
+  </div>
+
+  <script>
+    // WebSocket connection
+    let ws = null;
+
+    function connectWS() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${location.host}`);
+
+      ws.onopen = () => {
+        document.getElementById('wsIndicator').classList.add('connected');
+        document.getElementById('wsStatus').textContent = 'Connected';
+      };
+
+      ws.onclose = () => {
+        document.getElementById('wsIndicator').classList.remove('connected');
+        document.getElementById('wsStatus').textContent = 'Disconnected';
+        setTimeout(connectWS, 3000);
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        handleWSMessage(data);
+      };
+    }
+
+    function handleWSMessage(data) {
+      if (data.type === 'voice_command') {
+        addVoiceCommand(data.data);
+      } else if (data.type === 'player_action') {
+        updateStats(data.data);
+      } else if (data.type === 'combo') {
+        updateCombo(data.data);
+      }
+    }
+
+    // Voice
+    let voiceActive = false;
+    let recognition = null;
+
+    function toggleVoice() {
+      if (!('webkitSpeechRecognition' in window)) {
+        alert('Voice recognition not supported');
+        return;
+      }
+
+      if (!voiceActive) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = (event) => {
+          const result = event.results[event.results.length - 1];
+          const transcript = result[0].transcript.toLowerCase().trim();
+          const confidence = result[0].confidence;
+
+          if (transcript.includes('hey lumen') || transcript.includes('lumenis')) {
+            sendVoiceCommand(transcript, confidence);
+          }
+        };
+
+        recognition.start();
+        voiceActive = true;
+        document.getElementById('voiceBtn').classList.add('active');
+        document.getElementById('voiceBtn').textContent = 'Stop Voice';
+        document.getElementById('voiceStatus').textContent = 'Listening...';
+      } else {
+        recognition.stop();
+        voiceActive = false;
+        document.getElementById('voiceBtn').classList.remove('active');
+        document.getElementById('voiceBtn').textContent = 'Start Voice';
+        document.getElementById('voiceStatus').textContent = 'Voice stopped';
+      }
+    }
+
+    function sendVoiceCommand(cmd, confidence) {
+      fetch('/api/voice/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: cmd, confidence })
+      });
+
+      addVoiceCommand({ command: cmd, response: 'Processing...', confidence });
+    }
+
+    function addVoiceCommand(data) {
+      const history = document.getElementById('voiceHistory');
+      const div = document.createElement('div');
+      div.className = 'voice-cmd';
+      div.innerHTML = `<div class="cmd">"${data.command}"</div><div class="resp">${data.response || data.action}</div>`;
+      history.insertBefore(div, history.firstChild);
+
+      if (history.children.length > 10) {
+        history.removeChild(history.lastChild);
+      }
+    }
+
+    // Actions
+    function simulateAction() {
+      fetch('/api/player/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'hit', gameData: { damage: 10 } })
+      }).then(r => r.json()).then(data => updateStats(data));
+    }
+
+    function updateStats(data) {
+      document.getElementById('avgResponse').textContent = Math.round(data.responseTime || 0);
+      document.getElementById('bestResponse').textContent = Math.round(data.responseTime || 0) + 'ms';
+
+      const bar = document.getElementById('responseBar');
+      const width = Math.min(100, (data.responseTime || 0) / 100 * 100);
+      bar.style.width = width + '%';
+      bar.className = 'response-bar ' + (width > 50 ? 'slow' : 'fast');
+    }
+
+    function simulateHit() {
+      fetch('/api/telemetry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'hit', data: { damage: 10 } })
+      }).then(r => r.json()).then(data => {
+        if (data.combo?.highlight) {
+          document.getElementById('comboCard').classList.add('combo-active');
+          document.getElementById('comboCount').textContent = data.combo.hits;
+          setTimeout(() => document.getElementById('comboCard').classList.remove('combo-active'), 3000);
+        } else {
+          document.getElementById('comboCount').textContent = parseInt(document.getElementById('comboCount').textContent) + 1;
+        }
+      });
+    }
+
+    function resetCombo() {
+      document.getElementById('comboCount').textContent = '0';
+    }
+
+    // Voting
+    function castVote(strategy) {
+      fetch('/api/council/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agent: 'Player', strategy })
+      }).then(r => r.json()).then(() => refreshVotes());
+    }
+
+    function refreshVotes() {
+      fetch('/api/council/result').then(r => r.json()).then(data => {
+        const results = document.getElementById('voteResults');
+        results.innerHTML = '';
+
+        let maxVotes = 0;
+        Object.entries(data.votes).forEach(([k, v]) => {
+          if (v.count > maxVotes) maxVotes = v.count;
+        });
+
+        Object.entries(data.votes).forEach(([strategy, v]) => {
+          const width = maxVotes > 0 ? (v.count / maxVotes * 100) : 0;
+          results.innerHTML += `
+            <div class="vote-bar">
+              <span class="vote-label">${strategy}</span>
+              <div class="vote-fill" style="width: ${width}%"></div>
+              <span class="vote-count">${v.count}</span>
+            </div>
+          `;
+        });
+
+        if (!Object.keys(data.votes).length) {
+          results.innerHTML = '<p style="color: var(--text-muted);">No votes yet</p>';
+        }
+      });
+    }
+
+    // Steam
+    function refreshSteam() {
+      fetch('/api/steam/status').then(r => r.json()).then(data => {
+        const status = document.getElementById('steamStatus');
+        if (data.linked) {
+          status.innerHTML = `
+            <div class="steam-avatar">🎮</div>
+            <div class="steam-info">
+              <div class="name">Steam Linked</div>
+              <div class="status">ID: ${data.steamId}</div>
+            </div>
+          `;
+        } else {
+          status.innerHTML = `
+            <div class="steam-avatar">❌</div>
+            <div class="steam-info">
+              <div class="name">Not Connected</div>
+              <div class="status">Configure STEAM_API_KEY and STEAM_ID</div>
+            </div>
+          `;
+        }
+      });
+    }
+
+    // OBS
+    function switchScene(name) {
+      document.querySelectorAll('.scene-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    function toggleStream() {
+      const btn = document.getElementById('streamBtn');
+      const indicator = document.getElementById('streamIndicator');
+      const status = document.getElementById('streamStatus');
+
+      if (btn.textContent === 'Start Stream') {
+        btn.textContent = 'Stop Stream';
+        btn.style.background = '#ff5c5c';
+        indicator.classList.add('live');
+        status.textContent = 'Stream: Live';
+      } else {
+        btn.textContent = 'Start Stream';
+        btn.style.background = 'var(--accent-green)';
+        indicator.classList.remove('live');
+        status.textContent = 'Stream: Offline';
+      }
+    }
+
+    // Terminal
+    function handleTerminal(e) {
+      if (e.key === 'Enter') {
+        const input = document.getElementById('terminalInput');
+        const cmd = input.value.trim();
+        if (!cmd) return;
+
+        const body = document.getElementById('terminalBody');
+        body.innerHTML += `<div class="terminal-line input">$ ${cmd}</div>`;
+
+        // Process command
+        if (cmd === 'help') {
+          body.innerHTML += `<div class="terminal-line output">Commands: help, stats, combo, steam, obs, voice, clear</div>`;
+        } else if (cmd === 'stats') {
+          body.innerHTML += `<div class="terminal-line output">Fetching stats...</div>`;
+        } else if (cmd === 'clear') {
+          body.innerHTML = '';
+        } else {
+          body.innerHTML += `<div class="terminal-line output">Command not found: ${cmd}</div>`;
+        }
+
+        input.value = '';
+        body.scrollTop = body.scrollHeight;
+      }
+    }
+
+    // Init
+    connectWS();
+    refreshVotes();
+
+    // Poll stats
+    setInterval(() => {
+      fetch('/api/player/stats').then(r => r.json()).then(data => {
+        document.getElementById('avgResponse').textContent = Math.round(data.avgResponseTime || 0);
+        document.getElementById('bestResponse').textContent = Math.round(data.bestResponseTime || 0) + 'ms';
+        document.getElementById('totalActions').textContent = data.totalActions || 0;
+        document.getElementById('consistency').textContent = (data.consistency || 100) + '%';
+      });
+    }, 2000);
+  </script>
+</body>
+</html>

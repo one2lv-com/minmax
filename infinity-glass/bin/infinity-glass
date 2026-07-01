@@ -1,0 +1,10 @@
+#!/bin/bash
+
+echo "=== Infinity Glass Runtime ==="
+
+echo "[OPTICS] OK"
+echo "[SENSORS] OK"
+echo "[POWER] OK"
+echo "[HUD] READY"
+
+sleep 1

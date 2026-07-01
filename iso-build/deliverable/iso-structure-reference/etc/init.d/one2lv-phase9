@@ -1,0 +1,60 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          one2lv-phase9
+# Required-Start:    $local_fs $network $syslog
+# Required-Stop:     $local_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: One2lvOS Phase 9 Delta Engine
+# Description:       Full Autonomous Multi-Agent System with 3D Vectors
+### END INIT INFO
+
+DELTA_ENGINE="/opt/one2lv/launch.sh"
+PID_FILE="/var/run/one2lv-phase9.pid"
+
+case "$1" in
+    start)
+        echo "Starting One2lvOS Phase 9 Delta Engine..."
+        if [ -x "$DELTA_ENGINE" ]; then
+            cd /opt/one2lv
+            nohup "$DELTA_ENGINE" > /var/log/one2lv-phase9.log 2>&1 &
+            echo $! > "$PID_FILE"
+            echo "Phase 9 Delta Engine started (PID: $(cat $PID_FILE))"
+        else
+            echo "Phase 9 launcher not found at $DELTA_ENGINE"
+        fi
+        ;;
+    stop)
+        echo "Stopping One2lvOS Phase 9..."
+        if [ -f "$PID_FILE" ]; then
+            kill $(cat "$PID_FILE") 2>/dev/null
+            rm -f "$PID_FILE"
+        fi
+        pkill -f "node.*server.js" 2>/dev/null
+        pkill -f "node.*council.js" 2>/dev/null
+        echo "Phase 9 stopped"
+        ;;
+    restart)
+        $0 stop
+        sleep 2
+        $0 start
+        ;;
+    status)
+        if [ -f "$PID_FILE" ]; then
+            PID=$(cat "$PID_FILE")
+            if ps -p "$PID" > /dev/null 2>&1; then
+                echo "One2lvOS Phase 9 is running (PID: $PID)"
+            else
+                echo "PID file exists but process is not running"
+            fi
+        else
+            echo "One2lvOS Phase 9 is not running"
+        fi
+        ;;
+    *)
+        echo "Usage: /etc/init.d/one2lv-phase9 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit 0

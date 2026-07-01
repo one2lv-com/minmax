@@ -1,0 +1,31 @@
+{
+  "name": "one2lv-os-phase8",
+  "version": "4.0.0",
+  "type": "module",
+  "description": "One2lvOS Phase 4-8 - Full Autonomous Multi-Agent System",
+  "main": "ai/council/council.js",
+  "scripts": {
+    "start": "bash launch.sh",
+    "council": "node ai/council/council.js",
+    "ui": "node ui/server.js",
+    "discovery": "node mesh/discovery.js",
+    "test": "node core/test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.17.0",
+    "cors": "^2.8.5",
+    "node-fetch": "^3.3.2",
+    "uuid": "^9.0.0"
+  },
+  "keywords": [
+    "autonomous",
+    "multi-agent",
+    "council",
+    "rpc",
+    "vector-db",
+    "sandbox"
+  ],
+  "author": "One2lvOS",
+  "license": "MIT"
+}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>One2lvOS Infinity Glass</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="glass-root">
+    <canvas id="glass-canvas"></canvas>
+
+    <div id="hud">
+      <div class="topbar">
+        <div class="brand">One2lvOS • Infinity Glass</div>
+        <div class="status-row">
+          <span class="pill">boot-vector</span>
+          <span class="pill">breadcrumbs</span>
+          <span class="pill">mesh</span>
+        </div>
+      </div>
+
+      <div class="grid">
+        <section class="panel">
+          <div class="panel-title">BOOT CONSOLE</div>
+          <pre id="boot-console" class="console"></pre>
+          <div class="button-row">
+            <button class="ui-btn" id="boot-status-btn">Boot Status</button>
+            <button class="ui-btn" id="quickstart-btn">Quickstart</button>
+            <button class="ui-btn" id="recovery-btn">Recovery</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">TERMINAL</div>
+          <pre id="terminal-output" class="console"></pre>
+          <div class="terminal-row">
+            <span class="prompt">~ #</span>
+            <input id="terminal-input" class="terminal-input" placeholder="help | boot.status | who.dat | breadcrumbs" />
+            <button class="ui-btn run" id="run-btn">Run</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">AI MESH</div>
+          <div id="mesh-status" class="mesh-box">Awaiting node map…</div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

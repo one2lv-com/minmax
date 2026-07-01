@@ -1,0 +1,2 @@
+import { config } from "./config.js";
+export async function moltbookGet(pathname){ if(!config.moltbookEnabled) throw new Error('Moltbook integration disabled'); if(!config.moltbookApiKey) throw new Error('MOLTBOOK_API_KEY missing'); const url=`${config.moltbookBaseUrl.replace(/\/$/, '')}/${pathname.replace(/^\//, '')}`; const res=await fetch(url,{headers:{Authorization:`Bearer ${config.moltbookApiKey}`,'Content-Type':'application/json'}}); if(!res.ok){ const text=await res.text(); throw new Error(`Moltbook error ${res.status}: ${text}`);} return res.json(); }
