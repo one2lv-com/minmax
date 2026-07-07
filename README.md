@@ -295,6 +295,15 @@ MIT License - One2lvOS Project
 
 ---
 
+## Related Repositories
+
+| Repository | Description |
+|-----------|-------------|
+| [**one2lv-com/minmax**](https://github.com/one2lv-com/minmax) | This repo - Phase 9 Delta Engine (cross-platform: Linux, macOS, Windows 11) |
+| [**one2lv-com/Interplanetary-disk**](https://github.com/one2lv-com/Interplanetary-disk) | Secure Docker deployment stack with JWT auth, nginx proxy, Alpine sandbox |
+
+---
+
 **Phase 9 - Full Autonomy with Delta Engine**
 
 ∆⁹ 9-Layer Gradient | ³ 3D Vectors | ++ Amplify | -- Attenuate | Interplanetary Disk
