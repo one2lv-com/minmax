@@ -295,6 +295,14 @@ MIT License - One2lvOS Project
 
 ---
 
+## Founder Documentation
+
+| Document | Description |
+|----------|-------------|
+| [**ONE2LV FIELD MANUAL: THE WATCHMAN'S ARCHITECTURE**](./ONE2LV-FIELD-MANUAL.md) | Founder document — serial O2L-V1-001-ARK. Mission identity, the 73.0 frequency, 1,513 modules across 4 tracks, atomic clock algorithms, ARK Chain, dual-track startup plan |
+
+---
+
 ## Related Repositories
 
 | Repository | Description |
