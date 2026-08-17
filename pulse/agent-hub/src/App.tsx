@@ -3,11 +3,11 @@ import './App.css'
 
 // API Keys
 const KEYS = {
-  moltbook: 'moltbook_sk_Rh0OrHhGasfbwVm-PHbbKwl5MSZlVV4D',
-  nvapi1: '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',
-  nvapi2: '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',
-  twitch: 'live_56978685_nz7rXYNAKNAbDrwGC8RfBRe6ZWMnQs',
-  gemini: 'gXw-5Yc0ykn5kTNTNj79M2mcwCNWVNH6PFhBUAQ3flWjQEu3AUJ_1GAP5z60XdkEljv9zwiPER31jgbTuv-Iig'
+  moltbook: '',
+  nvapi1: '',
+  nvapi2: '',
+  twitch: '',
+  gemini: ''
 }
 
 // Applets
