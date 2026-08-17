@@ -3,7 +3,7 @@
  * Phase 4-8: LLM interface with local model support
  */
 
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import fs from 'fs';
 
 const CONFIG = {
@@ -30,13 +30,13 @@ export async function runLLM(prompt) {
   }
 
   return new Promise((resolve) => {
-    const cmd = `"${CONFIG.LLAMA_PATH}" -m "${CONFIG.MODEL_PATH}" -p "${prompt.replace(/"/g, '\\"')}" -n ${CONFIG.N_PREDICTS} --log-disable`;
+    const args = ['-m', CONFIG.MODEL_PATH, '-p', prompt, '-n', String(CONFIG.N_PREDICTS), '--log-disable'];
 
     const timeout = setTimeout(() => {
       resolve(simulateLLM(prompt));
     }, CONFIG.TIMEOUT);
 
-    exec(cmd, { timeout: CONFIG.TIMEOUT }, (error, stdout, stderr) => {
+    execFile(CONFIG.LLAMA_PATH, args, { timeout: CONFIG.TIMEOUT }, (error, stdout, stderr) => {
       clearTimeout(timeout);
 
       if (error) {
