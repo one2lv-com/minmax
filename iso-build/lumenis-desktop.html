@@ -638,7 +638,7 @@ const AppActions = {
     generateCurl() {
         const trackingStatusWindowTerminalCodeBox = document.getElementById("ai-status");
         if (trackingStatusWindowTerminalCodeBox) {
-            trackingStatusWindowTerminalCodeBox.innerText = `curl -X POST "http://127.0.0.1:8080/api/v1/nvidia/proxy" \\\n  -H "Authorization: Bearer One2lvOS_Lumenis_Secure_v7" \\\n  -d '{"manifold_resonance_target": "73Hz"}'`;
+            trackingStatusWindowTerminalCodeBox.innerText = `curl -X POST "http://127.0.0.1:8080/api/v1/nvidia/proxy" \\\n  -H "Authorization: Bearer <API_TOKEN>" \\\n  -d '{"manifold_resonance_target": "73Hz"}'`;
         }
     },
 
