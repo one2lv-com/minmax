@@ -3,7 +3,7 @@
  * Phase 4-8: Per-agent capability-based sandbox
  */
 
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -18,6 +18,9 @@ const CONFIG = {
   TIMEOUT_MS: 5000,
   MAX_OUTPUT: 10000 // bytes
 };
+
+// Allowlist for Docker image names
+const VALID_IMAGE_RE = /^[a-zA-Z0-9][a-zA-Z0-9._\-/:@]*$/;
 
 /**
  * Load capabilities
@@ -124,8 +127,14 @@ export function sandbox(agent, command) {
 
     // Sanitize command
     const safeCommand = sanitize(command);
+    const parts = safeCommand.split(/\s+/).filter(Boolean);
 
-    // Execute with timeout
+    if (parts.length === 0) {
+      resolve({ success: false, error: 'invalid_command', message: 'Empty command after sanitization' });
+      return;
+    }
+
+    // Execute with timeout — use execFile to avoid shell interpretation
     const timeout = setTimeout(() => {
       resolve({
         success: false,
@@ -134,8 +143,7 @@ export function sandbox(agent, command) {
       });
     }, CONFIG.TIMEOUT_MS);
 
-    // Use simple shell execution (in production, use Docker/proot)
-    exec(safeCommand, { timeout: CONFIG.TIMEOUT_MS, maxBuffer: CONFIG.MAX_OUTPUT }, (error, stdout, stderr) => {
+    execFile(parts[0], parts.slice(1), { timeout: CONFIG.TIMEOUT_MS, maxBuffer: CONFIG.MAX_OUTPUT }, (error, stdout, stderr) => {
       clearTimeout(timeout);
 
       if (error) {
@@ -166,11 +174,16 @@ export async function sandboxDocker(agent, command, image = 'alpine:latest') {
     return { success: false, error: 'denied', message: 'Command not allowed' };
   }
 
+  if (!VALID_IMAGE_RE.test(image)) {
+    return { success: false, error: 'invalid_image', message: 'Invalid Docker image name' };
+  }
+
   const safeCommand = sanitize(command);
 
   return new Promise((resolve) => {
-    exec(
-      `docker run --rm --network none ${image} sh -c "${safeCommand}"`,
+    execFile(
+      'docker',
+      ['run', '--rm', '--network', 'none', image, 'sh', '-c', safeCommand],
       { timeout: CONFIG.TIMEOUT_MS, maxBuffer: CONFIG.MAX_OUTPUT },
       (error, stdout, stderr) => {
         if (error) {
@@ -193,15 +206,21 @@ export async function sandboxProot(agent, command) {
   }
 
   const safeCommand = sanitize(command);
+  const parts = safeCommand.split(/\s+/).filter(Boolean);
 
   return new Promise((resolve) => {
-    exec(
-      `proot -b /:/mnt sh -c "${safeCommand}"`,
+    execFile(
+      'proot',
+      ['-b', '/:/mnt', 'sh', '-c', safeCommand],
       { timeout: CONFIG.TIMEOUT_MS, maxBuffer: CONFIG.MAX_OUTPUT },
       (error, stdout, stderr) => {
         if (error) {
           // Fallback to simple execution
-          exec(safeCommand, { timeout: CONFIG.TIMEOUT_MS }, (e, out, err) => {
+          if (parts.length === 0) {
+            resolve({ success: false, output: '', error: 'Empty command' });
+            return;
+          }
+          execFile(parts[0], parts.slice(1), { timeout: CONFIG.TIMEOUT_MS }, (e, out, err) => {
             resolve({
               success: !e,
               output: out || '',
