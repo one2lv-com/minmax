@@ -7,6 +7,17 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
 const app = express();
+
+// Security headers
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  next();
+});
 const PORT = 8080;
 
 // Load JWT_SECRET from environment variable (fallback for development)
